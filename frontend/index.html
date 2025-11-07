@@ -104,6 +104,18 @@
             opacity: 0.8;
         }
 
+        .message.agent.typing::after {
+            content: '▊';
+            animation: blink 1s infinite;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
         .chat-input-container {
             padding: 20px;
             background: white;
@@ -479,8 +491,31 @@
                                     // Tool returned results
                                     addProcessItem('observation', data.content);
                                 }
+                                else if (data.type === 'response_start') {
+                                    // Starting word-by-word response streaming
+                                    if (!agentResponseDiv) {
+                                        agentResponseDiv = addAgentMessage('');
+                                        agentResponseDiv.classList.add('typing');
+                                    }
+                                    agentResponse = '';
+                                }
+                                else if (data.type === 'response_chunk') {
+                                    // Individual word in streaming response
+                                    if (agentResponseDiv) {
+                                        agentResponse += data.content;
+                                        agentResponseDiv.textContent = agentResponse;
+                                        scrollToBottom(chatMessages);
+                                    }
+                                }
+                                else if (data.type === 'response_complete') {
+                                    // Response streaming finished
+                                    if (agentResponseDiv) {
+                                        agentResponseDiv.classList.remove('typing');
+                                        addProcessItem('response', 'Generated final response');
+                                    }
+                                }
                                 else if (data.type === 'response') {
-                                    // Final agent response
+                                    // Fallback for non-chunked responses
                                     if (!agentResponseDiv) {
                                         agentResponseDiv = addAgentMessage('');
                                     }

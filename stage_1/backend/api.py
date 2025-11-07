@@ -200,12 +200,30 @@ async def stream_agent_response(message: str) -> AsyncGenerator[str, None]:
                         
                         # Check if agent is providing final response
                         elif msg.content:
-                            event_data = {
-                                "type": "response",
-                                "node": "agent",
-                                "content": msg.content
-                            }
-                            yield f"data: {json.dumps(event_data)}\n\n"
+                            # Stream response word-by-word
+                            yield f"data: {json.dumps({'type': 'response_start'})}\n\n"
+                            
+                            # Split response into words for streaming
+                            words = msg.content.split(' ')
+                            for i, word in enumerate(words):
+                                # Add space after word (except for last word)
+                                word_with_space = word + (' ' if i < len(words) - 1 else '')
+                                
+                                event_data = {
+                                    "type": "response_chunk",
+                                    "node": "agent", 
+                                    "content": word_with_space,
+                                    "word_index": i,
+                                    "total_words": len(words)
+                                }
+                                yield f"data: {json.dumps(event_data)}\n\n"
+                                
+                                # Small delay for realistic typing effect (optional)
+                                import asyncio
+                                await asyncio.sleep(0.05)  # 50ms delay between words
+                            
+                            # Signal response completion
+                            yield f"data: {json.dumps({'type': 'response_complete'})}\n\n"
                 
                 elif node_name == "tools":
                     # Tools node output
