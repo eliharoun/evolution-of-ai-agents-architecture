@@ -157,8 +157,9 @@ def main():
     print("    ✅ Multi-tool coordination")
     print("="*80)
     print("\n🚀 Try the interactive web UI:")
-    print("   1. Start backend: uvicorn stage_1.backend.api:app --reload")
-    print("   2. Open: frontend/index.html in your browser\n")
+    print("   1. Start backend: uvicorn common.backend.api:app --reload")
+    print("   2. Open: frontend/index.html in your browser")
+    print("   3. Backend auto-loads Stage 1 (2 tools) by default\n")
 
 
 if __name__ == "__main__":

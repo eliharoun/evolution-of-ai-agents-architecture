@@ -40,6 +40,9 @@ class Config:
     MAX_ITERATIONS: int = int(os.getenv("MAX_ITERATIONS", "10"))
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     
+    # Stage Configuration
+    STAGE: int = int(os.getenv("STAGE", "1"))  # Default to Stage 1
+    
     # Backend Configuration
     BACKEND_HOST: str = os.getenv("BACKEND_HOST", "0.0.0.0")
     BACKEND_PORT: int = int(os.getenv("BACKEND_PORT", "8000"))

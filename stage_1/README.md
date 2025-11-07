@@ -155,7 +155,7 @@ This will demonstrate:
 **Step 1: Start the FastAPI backend**
 
 ```bash
-uvicorn stage_1.backend.api:app --reload
+uvicorn common.backend.api:app --reload
 ```
 
 The backend will start on `http://localhost:8000`
@@ -339,7 +339,7 @@ Available in the mock database:
 
 ## API Endpoints
 
-When running the backend (`uvicorn stage_1.backend.api:app --reload`):
+When running the backend (`uvicorn common.backend.api:app --reload`):
 
 ### GET /
 Health check endpoint
