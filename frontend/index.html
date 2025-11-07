@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Agent - Stage 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: 90vh;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        .container.panel-collapsed {
+            grid-template-columns: 1fr 0fr;
+        }
+
+        .chat-panel, .process-panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .panel-header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.agent {
+            background: white;
+            border: 1px solid #e0e0e0;
+            margin-right: auto;
+        }
+
+        .message.agent.thinking {
+            background: #fff3cd;
+            border-color: #ffc107;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #userInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendButton {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.3s;
+        }
+
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        #sendButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .process-panel {
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .process-panel.collapsed {
+            min-width: 50px;
+            overflow: hidden;
+        }
+
+        .process-panel.collapsed .panel-header {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            width: 50px;
+            padding: 10px 5px;
+            font-size: 16px;
+        }
+
+        .process-panel.collapsed .panel-header > div:first-child > div:first-child {
+            transform: rotate(180deg);
+        }
+
+        .process-panel.collapsed .panel-header .subtitle {
+            display: none;
+        }
+
+        .process-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .process-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .process-item.thought {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .process-item.observation {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .process-item.response {
+            border-left-color: #667eea;
+        }
+
+        .process-item-type {
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            opacity: 0.7;
+        }
+
+        .process-item-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 8px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .toggle-icon {
+            font-size: 24px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            user-select: none;
+        }
+
+        .process-panel.collapsed .process-content {
+            display: none;
+        }
+
+        .process-panel.collapsed .toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        .process-content {
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr auto;
+            }
+            
+            .container.panel-collapsed {
+                grid-template-rows: 1fr auto;
+            }
+            
+            .process-panel.collapsed {
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="panel-header">
+                <div>💬 Customer Support Chat</div>
+                <div class="subtitle">Stage 1: Simple ReAct Agent</div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🤖</div>
+                    <div>Welcome! I'm here to help with your order inquiries and store policies.</div>
+                    <div style="margin-top: 10px; font-size: 14px;">Try asking: "What's the status of order #12345?"</div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Ask about your order or our policies..."
+                        autocomplete="off"
+                    >
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thought Process Panel -->
+        <div class="process-panel">
+            <div class="panel-header" style="cursor: pointer;" onclick="toggleProcessPanel()">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div>🧠 Agent Thought Process</div>
+                        <div class="subtitle">ReAct: Reasoning & Actions</div>
+                    </div>
+                    <div id="toggleIcon" class="toggle-icon">−</div>
+                </div>
+            </div>
+            <div class="process-content" id="processContent">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚙️</div>
+                    <div>Agent's reasoning steps will appear here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const chatMessages = document.getElementById('chatMessages');
+        const processContent = document.getElementById('processContent');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        let isProcessing = false;
+
+        // Clear empty states on first interaction
+        function clearEmptyStates() {
+            if (chatMessages.querySelector('.empty-state')) {
+                chatMessages.innerHTML = '';
+            }
+            if (processContent.querySelector('.empty-state')) {
+                processContent.innerHTML = '';
+            }
+        }
+
+        // Add user message to chat
+        function addUserMessage(message) {
+            clearEmptyStates();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom(chatMessages);
+        }
+
+        // Add agent message to chat
+        function addAgentMessage(message, isThinking = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message agent ${isThinking ? 'thinking' : ''}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom(chatMessages);
+            return messageDiv;
+        }
+
+        // Add thought process item
+        function addProcessItem(type, content, toolInfo = null) {
+            clearEmptyStates();
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `process-item ${type}`;
+            
+            let typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            if (type === 'thought') typeLabel = '💭 Thought';
+            if (type === 'observation') typeLabel = '🔍 Observation';
+            if (type === 'response') typeLabel = '💬 Response';
+            
+            let contentHtml = `<div class="process-item-type">${typeLabel}</div>`;
+            contentHtml += `<div class="process-item-content">${content}`;
+            
+            if (toolInfo) {
+                contentHtml += `<span class="tool-badge">${toolInfo.name}</span>`;
+                if (Object.keys(toolInfo.args).length > 0) {
+                    contentHtml += `<pre>${JSON.stringify(toolInfo.args, null, 2)}</pre>`;
+                }
+            }
+            
+            contentHtml += `</div>`;
+            itemDiv.innerHTML = contentHtml;
+            
+            processContent.appendChild(itemDiv);
+            scrollToBottom(processContent);
+        }
+
+        // Scroll to bottom helper
+        function scrollToBottom(element) {
+            element.scrollTop = element.scrollHeight;
+        }
+
+        // Send message
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message || isProcessing) return;
+
+            // Add user message
+            addUserMessage(message);
+            userInput.value = '';
+            
+            // Show thinking state
+            const thinkingMsg = addAgentMessage('Agent is thinking...', true);
+            isProcessing = true;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span class="spinner"></span>';
+
+            try {
+                // Stream response
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        stream: true
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Remove thinking message
+                thinkingMsg.remove();
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let agentResponseDiv = null;
+                let agentResponse = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                if (data.type === 'thought') {
+                                    // Agent is using a tool
+                                    addProcessItem('thought', data.content, data.tool_call);
+                                }
+                                else if (data.type === 'observation') {
+                                    // Tool returned results
+                                    addProcessItem('observation', data.content);
+                                }
+                                else if (data.type === 'response') {
+                                    // Final agent response
+                                    if (!agentResponseDiv) {
+                                        agentResponseDiv = addAgentMessage('');
+                                    }
+                                    agentResponse = data.content;
+                                    agentResponseDiv.textContent = agentResponse;
+                                    addProcessItem('response', 'Generated final response');
+                                }
+                                else if (data.type === 'done') {
+                                    // Stream complete
+                                    if (!agentResponseDiv && agentResponse) {
+                                        addAgentMessage(agentResponse);
+                                    }
+                                }
+                                else if (data.type === 'error') {
+                                    // Error occurred
+                                    addAgentMessage(`Error: ${data.content}`);
+                                }
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                addAgentMessage(`Sorry, an error occurred: ${error.message}`);
+            } finally {
+                isProcessing = false;
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Focus input on load
+        window.addEventListener('load', () => {
+            userInput.focus();
+            
+            // Check backend health
+            fetch(`${API_URL}/health`)
+                .then(r => r.json())
+                .then(data => {
+                    console.log('Backend status:', data);
+                })
+                .catch(e => {
+                    console.error('Backend not reachable:', e);
+                    addAgentMessage('⚠️ Backend not connected. Please ensure the server is running on http://localhost:8000');
+                });
+        });
+
+        // Toggle process panel function
+        function toggleProcessPanel() {
+            const container = document.querySelector('.container');
+            const panel = document.querySelector('.process-panel');
+            const icon = document.getElementById('toggleIcon');
+            
+            container.classList.toggle('panel-collapsed');
+            panel.classList.toggle('collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                icon.textContent = '▶';
+            } else {
+                icon.textContent = '−';
+            }
+        }
+    </script>
+</body>
+</html>
