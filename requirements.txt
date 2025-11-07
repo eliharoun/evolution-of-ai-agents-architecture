@@ -1,0 +1,26 @@
+# Core LangGraph and LangChain
+langgraph
+langchain
+langchain-core
+langchain-openai
+langchain-anthropic
+langchain-ollama
+langchain-community
+
+# Vector store and embeddings for FAQ retrieval
+sentence-transformers
+chromadb
+
+# Configuration and environment
+python-dotenv
+
+# Backend API
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Data validation
+pydantic
+
+# Utilities
+aiofiles
