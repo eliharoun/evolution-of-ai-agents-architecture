@@ -1,46 +1,38 @@
 <div align="center">
 
-# 🤖 Evolution of AI Agent Architectures
+# 🤖 Evolution of AI Agents Architecture
 
 **A comprehensive hands-on tutorial series showcasing the evolution from simple to sophisticated AI agent design patterns**
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Framework-green?style=for-the-badge)](https://python.langchain.com/docs/langgraph)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-[![Stage](https://img.shields.io/badge/Stage%201-Complete-success?style=for-the-badge)](stage_1/)
-
-*Build production-ready AI agents with streaming interfaces and advanced architectural patterns*
-
-[🚀 Get Started](#quick-start) | [📚 Documentation](#tutorial-stages) | [🎯 Live Demo](#features) | [💡 Examples](#example-interactions)
 
 </div>
 
----
-
-## 🎯 What You'll Build
+## 🎯 What You'll Learn
 
 Transform from a simple chatbot to production-ready multi-agent systems through **5 progressive stages**:
 
 | Stage | Focus | Architecture | Features |
 |-------|-------|--------------|--------------|
-| **🏗️ Stage 1** | **ReAct Foundation** | Single Agent | Tool integration, streaming, RAG with ChromaDB |
-| **🔧 Stage 2** | **Sophisticated Single** | Enhanced Agent | Multiple tools, limitation demos |
+| **🏗️ Stage 1** | **ReAct Foundation** | Single Agent | 2 tools, streaming, RAG, AI assistant style UI |
+| **🔧 Stage 2** | **Sophisticated Single** | Enhanced Agent | 7 tools, struggle detection, stateful ops |
 | **🧠 Stage 3** | **Advanced Patterns** | Smart Agent | ReWOO, Reflexion, Plan-and-Execute |
 | **👥 Stage 4** | **Multi-Agent** | Agent Teams | Supervisor, Pipeline, Collaborative |
 | **📊 Stage 5** | **Production Analysis** | Optimized System | Performance comparison, pattern selection |
 
 ## ✨ Features
 
-### 🎬 **Real-Time Streaming Interface**
+### 🎬 **Simple Demo UI**
+- **Chatting interface** - Chat with the agent to test different scenarios
 - **Live thought process visualization** - Watch your agent think, act, and observe in real-time
-- **Collapsible panels** - Clean UI that adapts to your needs
-- **Multi-provider support** - OpenAI, Anthropic Claude, or local Ollama models
 
 ### 🛠️ **Production-Ready Architecture**
 - **Model Factory Pattern** - Switch between AI providers with zero code changes
-- **Shared Resources** - DRY principles with reusable components across stages
+- **Shared Resources** - Reusable components across stages
 - **Configuration-Driven** - Environment-based model selection and behavior
-- **Standard Logging** - Professional logging throughout the codebase
+- **Standard Logging** - Logging throughout the code
 
 ### 🧰 **Advanced RAG Implementation**
 - **ChromaDB Integration** - Persistent vector storage for semantic search
@@ -122,7 +114,7 @@ For other questions, please use a general-purpose assistant.
 
 ## 🎯 Tutorial Stages
 
-### 🏗️ **Stage 1: Foundation** ✅ *COMPLETE*
+### 🏗️ **Stage 1: Foundation**
 > **Simple ReAct Agent** - Learn the fundamentals
 
 **What you'll build:**
@@ -137,23 +129,22 @@ For other questions, please use a general-purpose assistant.
 - RAG implementation with ChromaDB
 - Production-ready FastAPI backend
 
-[📖 Stage 1 Documentation](stage_1/README.md) | [🔧 Setup Guide](stage_1/SETUP.md)
+[📖 Stage 1 Documentation](stage_1/README.md)
 
 ---
 
-### 🔧 **Stage 2: Sophisticated Single Agent** *Coming Soon*
+### 🔧 **Stage 2: Sophisticated Single Agent**
 > **Tool Complexity & Limitations** - Discover when single agents break
 
-**What you'll build:**
-- Enhanced agent with 5+ tools (refunds, shipping, inventory)
-- Scenarios demonstrating tool selection confusion
-- Context loss examples with multi-step requests
-- Side-by-side comparison with Stage 1
 
-**Concepts:**
-- Tool orchestration challenges
-- Context management at scale
-- Performance bottlenecks identification
+
+**Demonstrated struggles:**
+- Missing information causing agent confusion
+- Multi-step dependency chains (4-5 sequential tools)
+- Complex conditional logic (if/then/else)
+- Tool confusion and redundant calls
+
+[📖 Stage 2 Documentation](stage_2/README.md)
 
 ---
 
@@ -190,22 +181,15 @@ For other questions, please use a general-purpose assistant.
 ### 📊 **Stage 5: Performance & Pattern Analysis** *Coming Soon*
 > **Production Optimization** - Choose the right pattern for the job
 
-**What you'll build:**
-- Comprehensive test suite across all patterns
-- Performance benchmarking and metrics
-- Pattern selection guide and decision framework
-- Production deployment strategies
-
-**Concepts:**
-- Performance evaluation methods
-- Cost-benefit analysis
-- Production monitoring and optimization
-
 ## 🏃‍♂️ Running the Web Interface
 
-1. **Start the backend:**
+1. **Start the unified backend:**
    ```bash
-   uvicorn stage_1.backend.api:app --reload
+   # Stage 1 (default - 2 tools)
+   uvicorn common.backend.api:app --reload
+   
+   # Or Stage 2 (7 tools + struggles)
+   STAGE=2 uvicorn common.backend.api:app --reload
    ```
 
 2. **Open the frontend:**
@@ -245,7 +229,7 @@ ANTHROPIC_API_KEY=sk-ant-your-key
 
 ## 🎓 Learning Path
 
-This tutorial teaches you to build **production-ready AI agents** through hands-on coding:
+This repo teaches you to build **production-ready AI agents** through hands-on coding:
 
 ### **📚 What You'll Learn**
 - **LangGraph fundamentals** - State management, nodes, edges, conditional routing
@@ -253,13 +237,6 @@ This tutorial teaches you to build **production-ready AI agents** through hands-
 - **RAG implementation** - Vector databases, embeddings, semantic search
 - **Multi-agent coordination** - Communication, task delegation, collaboration
 - **Production deployment** - FastAPI, streaming, monitoring, optimization
-
-## 🌟 Why This Tutorial?
-
-### **🔬 Hands-On Learning**
-- **No theory-only content** - Every concept demonstrated with working code
-- **Progressive complexity** - Start simple, add sophistication gradually
-- **Real-world scenarios** - Customer support use cases throughout
 
 ### **🏭 Production-Focused**
 - **Enterprise-grade code** - Type hints, logging, error handling, documentation

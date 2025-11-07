@@ -40,56 +40,58 @@ app.add_middleware(
 
 # Global workflow instances
 workflows = {}
-current_stage = None
+stage = None
 
 
-def load_workflow(stage: int):
+def load_workflow(stage_num: int):
     """
     Dynamically load the appropriate workflow for the given stage.
     
     Args:
-        stage: Stage number (1 or 2)
+        stage_num: Stage number (1 or 2)
         
     Returns:
         AgentWorkflow instance for the specified stage
     """
-    global current_stage
+    global stage
     
-    if stage in workflows and current_stage == stage:
-        return workflows[stage]
+    if stage_num in workflows and stage == stage_num:
+        return workflows[stage_num]
     
-    logger.info(f"Loading Stage {stage} workflow with model_type: {config.MODEL_TYPE}")
+    logger.info(f"Loading Stage {stage_num} workflow with model_type: {config.MODEL_TYPE}")
     
     try:
-        if stage == 1:
+        if stage_num == 1:
             from stage_1.agents.workflow import AgentWorkflow
             workflow = AgentWorkflow()
             logger.info(f"Stage 1 workflow loaded - tools: {len(workflow.agent.tools)}")
             
-        elif stage == 2:
+        elif stage_num == 2:
             from stage_2.agents.workflow import AgentWorkflow
             workflow = AgentWorkflow()
             logger.info(f"Stage 2 workflow loaded - tools: {len(workflow.agent.tools)}")
             
         else:
-            raise ValueError(f"Unsupported stage: {stage}. Available: 1, 2")
+            raise ValueError(f"Unsupported stage: {stage_num}. Available: 1, 2")
         
-        workflows[stage] = workflow
-        current_stage = stage
+        workflows[stage_num] = workflow
+        stage = stage_num
         return workflow
         
     except Exception as e:
-        logger.error(f"Failed to load Stage {stage} workflow: {str(e)}")
+        logger.error(f"Failed to load Stage {stage_num} workflow: {str(e)}")
         raise
 
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize with default stage."""
+    """Initialize with configured stage from environment."""
     try:
-        # Load default stage (Stage 1)
-        load_workflow(1)
-        logger.info("Unified API ready - default: Stage 1")
+        # Load stage from environment variable or default to Stage 1
+        import os
+        stage_num = int(os.getenv("STAGE", "1"))
+        load_workflow(stage_num)
+        logger.info(f"Unified API ready - loaded Stage {stage_num}")
     except Exception as e:
         logger.error(f"API startup error: {str(e)}")
         raise
@@ -101,7 +103,7 @@ async def root():
     return {
         "status": "online",
         "service": "Customer Support Agent - Unified Backend",
-        "current_stage": current_stage,
+        "stage": stage,
         "available_stages": [1, 2],
         "model_type": config.MODEL_TYPE
     }
@@ -110,11 +112,11 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Detailed health check."""
-    workflow = workflows.get(current_stage) if current_stage else None
+    workflow = workflows.get(stage) if stage else None
     
     health_info = {
         "status": "healthy",
-        "current_stage": current_stage,
+        "stage": stage,
         "available_stages": [1, 2],
         "workflow_initialized": workflow is not None,
         "model_type": workflow.model_type if workflow else None,
@@ -122,7 +124,7 @@ async def health_check():
     }
     
     # Add struggle stats for Stage 2
-    if current_stage == 2 and workflow and hasattr(workflow, 'get_struggle_stats'):
+    if stage == 2 and workflow and hasattr(workflow, 'get_struggle_stats'):
         health_info["struggle_stats"] = workflow.get_struggle_stats()
     
     return health_info
@@ -146,8 +148,8 @@ async def switch_stage(stage_num: int):
 @app.get("/struggles")
 async def get_struggle_stats():
     """Get current struggle statistics (Stage 2 only)."""
-    if current_stage != 2:
-        return {"message": f"Struggle stats only available for Stage 2 (current: Stage {current_stage})"}
+    if stage != 2:
+        return {"message": f"Struggle stats only available for Stage 2 (current: Stage {stage})"}
     
     workflow = workflows.get(2)
     if not workflow or not hasattr(workflow, 'get_struggle_stats'):
@@ -167,8 +169,8 @@ async def get_struggle_stats():
 @app.post("/struggles/reset")
 async def reset_struggle_stats():
     """Reset struggle statistics (Stage 2 only)."""
-    if current_stage != 2:
-        return {"message": f"Struggle stats only available for Stage 2 (current: Stage {current_stage})"}
+    if stage != 2:
+        return {"message": f"Struggle stats only available for Stage 2 (current: Stage {stage})"}
     
     workflow = workflows.get(2)
     if not workflow or not hasattr(workflow, 'reset_struggle_stats'):
@@ -194,19 +196,19 @@ class ChatResponse(BaseModel):
 
 
 @app.post("/chat")
-async def chat(request: ChatRequest, stage: int = Query(None, description="Override stage for this request")):
+async def chat(request: ChatRequest, stage_param: int = Query(None, description="Override stage for this request")):
     """
     Chat with the customer support agent.
     
     Args:
         request: ChatRequest with message and stream flag
-        stage: Optional stage override (1 or 2)
+        stage_param: Optional stage override (1 or 2)
         
     Returns:
         StreamingResponse if stream=True, ChatResponse otherwise
     """
     # Determine which stage to use
-    target_stage = stage or request.stage or current_stage or 1
+    target_stage = stage_param or request.stage or stage or 1
     
     # Load appropriate workflow
     workflow = load_workflow(target_stage)
@@ -338,8 +340,14 @@ async def stream_agent_response(message: str, stage: int) -> AsyncGenerator[str,
                                 import asyncio
                                 await asyncio.sleep(0.05)  # 50ms delay between words
                             
-                            # Signal response completion
-                            yield f"data: {json.dumps({'type': 'response_complete'})}\n\n"
+                            # Signal response completion with struggle stats
+                            completion_event = {'type': 'response_complete', 'stage': stage}
+                            
+                            # Add struggle stats for Stage 2
+                            if stage == 2 and hasattr(workflow, 'get_struggle_stats'):
+                                completion_event['struggle_stats'] = workflow.get_struggle_stats()
+                            
+                            yield f"data: {json.dumps(completion_event)}\n\n"
                 
                 elif node_name == "tools":
                     # Tools node output
@@ -360,7 +368,7 @@ async def stream_agent_response(message: str, stage: int) -> AsyncGenerator[str,
                                 }
                                 yield f"data: {json.dumps(event_data)}\n\n"
         
-        # Send completion event
+        # Send completion event with struggle stats
         completion_data = {"type": "done", "stage": stage}
         
         # Add struggle stats for Stage 2
@@ -379,9 +387,9 @@ async def stream_agent_response(message: str, stage: int) -> AsyncGenerator[str,
 
 
 @app.get("/tools")
-async def list_tools(stage: int = Query(None, description="Stage to get tools for")):
+async def list_tools(stage_param: int = Query(None, description="Stage to get tools for")):
     """List available tools for the specified stage."""
-    target_stage = stage or current_stage or 1
+    target_stage = stage_param or stage or 1
     workflow = load_workflow(target_stage)
     
     tools_info = []
@@ -415,7 +423,7 @@ async def list_stages():
                 "description": "Same ReAct agent with tool complexity that reveals limitations"
             }
         },
-        "current_stage": current_stage
+        "stage": stage
     }
 
 
@@ -424,8 +432,8 @@ if __name__ == "__main__":
     import uvicorn
     
     # Allow stage selection via environment
-    stage = int(os.getenv("STAGE", "1"))
-    load_workflow(stage)
+    stage_num = int(os.getenv("STAGE", "1"))
+    load_workflow(stage_num)
     
     uvicorn.run(
         app,

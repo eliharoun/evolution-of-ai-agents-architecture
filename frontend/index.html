@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -86,14 +86,16 @@
         }
 
         .message.user {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #e3f2fd;
+            color: #1565c0;
             margin-left: auto;
+            border: 1px solid #90caf9;
         }
 
         .message.agent {
-            background: white;
+            background: #f5f5f5;
             border: 1px solid #e0e0e0;
+            color: #333;
             margin-right: auto;
         }
 
@@ -295,6 +297,186 @@
             transition: all 0.3s ease;
         }
 
+        /* Context Monitoring Widget */
+        .context-monitor {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+            font-size: 13px;
+        }
+
+        .context-monitor-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .context-stat:last-child {
+            border-bottom: none;
+        }
+
+        .context-label {
+            color: #666;
+        }
+
+        .context-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .context-value.warning {
+            color: #ff9800;
+        }
+
+        .context-value.danger {
+            color: #f44336;
+        }
+
+        /* Struggle Alert Banner */
+        .struggle-alert {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .struggle-alert-icon {
+            font-size: 20px;
+        }
+
+        .struggle-alert-content {
+            flex: 1;
+        }
+
+        .struggle-alert-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 4px;
+        }
+
+        .struggle-alert-message {
+            font-size: 13px;
+            color: #856404;
+        }
+
+        /* Response Card Grouping */
+        .response-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .response-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .response-card-title {
+            font-weight: 600;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .response-card-toggle {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .response-card.collapsed .response-card-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .response-card.collapsed .response-card-content {
+            display: none;
+        }
+
+        .response-card-content {
+            transition: all 0.3s ease;
+        }
+
+        /* Response Card Struggle Badge */
+        .struggle-badge {
+            background: #f44336;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            margin-left: 8px;
+        }
+
+        .struggle-badge.visible {
+            display: inline-block;
+        }
+
+        /* Struggle Summary - Reddish theme for errors */
+        .struggle-summary {
+            background: #ffebee;
+            border: 1px solid #ef5350;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .struggle-summary-title {
+            font-weight: 600;
+            color: #c62828;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .struggle-stat {
+            font-size: 13px;
+            color: #d32f2f;
+            padding: 6px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .struggle-stat-icon {
+            flex-shrink: 0;
+        }
+
+        .struggle-stat-detail {
+            flex: 1;
+        }
+
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
@@ -312,12 +494,35 @@
     </style>
 </head>
 <body>
+    <!-- Context Monitoring Widget -->
+    <div class="context-monitor" id="contextMonitor">
+        <div class="context-monitor-title">
+            📊 Context Monitor
+        </div>
+        <div class="context-stat">
+            <span class="context-label">Messages:</span>
+            <span class="context-value" id="messageCount">0</span>
+        </div>
+        <div class="context-stat">
+            <span class="context-label">Tokens:</span>
+            <span class="context-value" id="tokenCount">~0</span>
+        </div>
+        <div class="context-stat">
+            <span class="context-label">Tool Calls:</span>
+            <span class="context-value" id="toolCallCount">0</span>
+        </div>
+        <div class="context-stat">
+            <span class="context-label">Stage:</span>
+            <span class="context-value" id="currentStage">1</span>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Chat Panel -->
         <div class="chat-panel">
             <div class="panel-header">
                 <div>💬 Customer Support Chat</div>
-                <div class="subtitle">Stage 1: Simple ReAct Agent</div>
+                <div class="subtitle" id="stageSubtitle">Loading...</div>
             </div>
             <div class="chat-messages" id="chatMessages">
                 <div class="empty-state">
@@ -367,6 +572,52 @@
         const sendButton = document.getElementById('sendButton');
 
         let isProcessing = false;
+        
+        // Context tracking variables
+        let messageCount = 0;
+        let totalTokens = 0;
+        let toolCallCount = 0;
+        let currentStage = 1;
+        let responseCount = 0; // Separate counter for agent responses
+        let currentResponseCard = null;
+        let currentResponseProcessItems = [];
+
+        // Update context monitor
+        function updateContextMonitor() {
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('tokenCount').textContent = `~${totalTokens.toLocaleString()}`;
+            document.getElementById('toolCallCount').textContent = toolCallCount;
+            document.getElementById('currentStage').textContent = currentStage;
+            
+            // Update stage subtitle in header
+            updateStageSubtitle();
+            
+            // Add warning/danger classes based on thresholds
+            const tokenElement = document.getElementById('tokenCount');
+            tokenElement.classList.remove('warning', 'danger');
+            if (totalTokens > 50000) {
+                tokenElement.classList.add('danger');
+            } else if (totalTokens > 30000) {
+                tokenElement.classList.add('warning');
+            }
+        }
+
+        // Update stage subtitle in panel header
+        function updateStageSubtitle() {
+            const subtitle = document.getElementById('stageSubtitle');
+            if (currentStage === 1) {
+                subtitle.textContent = 'Stage 1: Simple ReAct Agent';
+            } else if (currentStage === 2) {
+                subtitle.textContent = 'Stage 2: Advanced ReAct Agent';
+            } else {
+                subtitle.textContent = `Stage ${currentStage}`;
+            }
+        }
+
+        // Estimate token count (~4 characters per token)
+        function estimateTokens(text) {
+            return Math.ceil(text.length / 4);
+        }
 
         // Clear empty states on first interaction
         function clearEmptyStates() {
@@ -378,9 +629,137 @@
             }
         }
 
+        // Create response card for grouping
+        function createResponseCard() {
+            responseCount++; // Increment response counter
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'response-card';
+            cardDiv.innerHTML = `
+                <div class="response-card-header">
+                    <div class="response-card-title">
+                        🤖 Agent Response #${responseCount}
+                        <span class="struggle-badge" id="struggleBadge${responseCount}">⚠️ 0 Struggles</span>
+                    </div>
+                    <div class="response-card-toggle">▼</div>
+                </div>
+                <div class="response-card-content"></div>
+            `;
+            
+            // Add click handler for collapse/expand
+            const header = cardDiv.querySelector('.response-card-header');
+            header.addEventListener('click', () => {
+                cardDiv.classList.toggle('collapsed');
+            });
+            
+            processContent.appendChild(cardDiv);
+            scrollToBottom(processContent);
+            return cardDiv;
+        }
+
+        // Update struggle badge with count
+        function updateStruggleBadge(stats) {
+            if (!currentResponseCard) return;
+            
+            // Count active struggles
+            let struggleCount = 0;
+            if (stats.high_iterations) struggleCount++;
+            if (stats.tool_confusion) struggleCount++;
+            if (stats.context_loss) struggleCount++;
+            
+            const badge = currentResponseCard.querySelector('.struggle-badge');
+            if (badge && struggleCount > 0) {
+                badge.textContent = `⚠️ ${struggleCount} Struggle${struggleCount > 1 ? 's' : ''}`;
+                badge.classList.add('visible');
+            }
+        }
+
+        // Add struggle alert banner
+        function addStruggleAlert(message) {
+            clearEmptyStates();
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'struggle-alert';
+            alertDiv.innerHTML = `
+                <div class="struggle-alert-icon">⚠️</div>
+                <div class="struggle-alert-content">
+                    <div class="struggle-alert-title">Struggle Detected</div>
+                    <div class="struggle-alert-message">${message}</div>
+                </div>
+            `;
+            processContent.appendChild(alertDiv);
+            scrollToBottom(processContent);
+        }
+
+        // Add struggle summary panel
+        function addStruggleSummary(stats) {
+            if (!currentResponseCard) return;
+            
+            // Count struggles for badge
+            updateStruggleBadge(stats);
+            
+            // Only show summary if there are actual struggles
+            const hasStruggles = stats.high_iterations || stats.tool_confusion || stats.context_loss;
+            if (!hasStruggles) return;
+            
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'struggle-summary';
+            
+            let summaryHtml = `
+                <div class="struggle-summary-title">
+                    ⚠️ Agent Struggle Analysis
+                </div>
+            `;
+            
+            if (stats.high_iterations) {
+                summaryHtml += `
+                    <div class="struggle-stat">
+                        <div class="struggle-stat-icon">🔄</div>
+                        <div class="struggle-stat-detail">
+                            <strong>High Iterations:</strong> Agent took ${stats.iteration_count} iterations to complete the task. This may indicate confusion in tool selection or task understanding.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (stats.tool_confusion) {
+                const toolsList = stats.unique_tools > 1 ? `${stats.unique_tools} different tools` : 'multiple tools';
+                summaryHtml += `
+                    <div class="struggle-stat">
+                        <div class="struggle-stat-icon">🤔</div>
+                        <div class="struggle-stat-detail">
+                            <strong>Tool Confusion:</strong> Agent used ${toolsList} simultaneously or in rapid succession, suggesting uncertainty about the right approach.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (stats.context_loss) {
+                const repeatedTools = Object.entries(stats.repeated_tools || {})
+                    .filter(([tool, count]) => count > 2)
+                    .map(([tool, count]) => `${tool} (${count}x)`)
+                    .join(', ');
+                summaryHtml += `
+                    <div class="struggle-stat">
+                        <div class="struggle-stat-icon">📉</div>
+                        <div class="struggle-stat-detail">
+                            <strong>Context Loss:</strong> Agent repeatedly called the same tools${repeatedTools ? ': ' + repeatedTools : ''}, indicating possible memory or context issues.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            summaryDiv.innerHTML = summaryHtml;
+            
+            const cardContent = currentResponseCard.querySelector('.response-card-content');
+            cardContent.appendChild(summaryDiv);
+        }
+
         // Add user message to chat
         function addUserMessage(message) {
             clearEmptyStates();
+            messageCount++;
+            totalTokens += estimateTokens(message);
+            updateContextMonitor();
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message user';
             messageDiv.textContent = message;
@@ -388,11 +767,45 @@
             scrollToBottom(chatMessages);
         }
 
+        // Simple markdown formatter for agent messages
+        function formatMessage(text) {
+            // Convert markdown-style formatting to HTML
+            let formatted = text;
+            
+            // Bold text: **text** -> <strong>text</strong>
+            formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Line breaks: preserve double line breaks
+            formatted = formatted.replace(/\n\n/g, '<br><br>');
+            
+            // Numbered lists: 1. text -> proper list items
+            formatted = formatted.replace(/(\d+)\.\s+\*\*([^*]+)\*\*:/g, '<div style="margin: 8px 0;"><strong>$1. $2:</strong>');
+            formatted = formatted.replace(/(\d+)\.\s+([^:\n]+):/g, '<div style="margin: 8px 0;"><strong>$1. $2:</strong>');
+            formatted = formatted.replace(/(\d+)\.\s+/g, '<br>$1. ');
+            
+            // Bullet points: - text -> proper formatting
+            formatted = formatted.replace(/^- /gm, '• ');
+            
+            return formatted;
+        }
+
         // Add agent message to chat
         function addAgentMessage(message, isThinking = false) {
+            if (!isThinking) {
+                messageCount++;
+                totalTokens += estimateTokens(message);
+                updateContextMonitor();
+            }
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message agent ${isThinking ? 'thinking' : ''}`;
-            messageDiv.textContent = message;
+            
+            if (isThinking) {
+                messageDiv.textContent = message;
+            } else {
+                messageDiv.innerHTML = formatMessage(message);
+            }
+            
             chatMessages.appendChild(messageDiv);
             scrollToBottom(chatMessages);
             return messageDiv;
@@ -401,6 +814,13 @@
         // Add thought process item
         function addProcessItem(type, content, toolInfo = null) {
             clearEmptyStates();
+            
+            // Track tool calls for context monitoring
+            if (toolInfo) {
+                toolCallCount++;
+                updateContextMonitor();
+            }
+            
             const itemDiv = document.createElement('div');
             itemDiv.className = `process-item ${type}`;
             
@@ -422,7 +842,15 @@
             contentHtml += `</div>`;
             itemDiv.innerHTML = contentHtml;
             
-            processContent.appendChild(itemDiv);
+            // Add to current response card if exists, otherwise to process content
+            if (currentResponseCard) {
+                const cardContent = currentResponseCard.querySelector('.response-card-content');
+                cardContent.appendChild(itemDiv);
+                currentResponseProcessItems.push(itemDiv);
+            } else {
+                processContent.appendChild(itemDiv);
+            }
+            
             scrollToBottom(processContent);
         }
 
@@ -445,6 +873,10 @@
             isProcessing = true;
             sendButton.disabled = true;
             sendButton.innerHTML = '<span class="spinner"></span>';
+            
+            // Create new response card for this interaction
+            currentResponseCard = createResponseCard();
+            currentResponseProcessItems = [];
 
             try {
                 // Stream response
@@ -470,6 +902,7 @@
                 const decoder = new TextDecoder();
                 let agentResponseDiv = null;
                 let agentResponse = '';
+                let struggleSummaryAdded = false;  // Prevent duplicate struggle summaries
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -503,7 +936,8 @@
                                     // Individual word in streaming response
                                     if (agentResponseDiv) {
                                         agentResponse += data.content;
-                                        agentResponseDiv.textContent = agentResponse;
+                                        // Use innerHTML with formatting for final display
+                                        agentResponseDiv.innerHTML = formatMessage(agentResponse);
                                         scrollToBottom(chatMessages);
                                     }
                                 }
@@ -513,6 +947,19 @@
                                         agentResponseDiv.classList.remove('typing');
                                         addProcessItem('response', 'Generated final response');
                                     }
+                                    
+                                    // Check for struggle_stats from backend (only process once)
+                                    if (data.struggle_stats && !struggleSummaryAdded) {
+                                        updateStruggleBadge(data.struggle_stats);
+                                        addStruggleSummary(data.struggle_stats);
+                                        struggleSummaryAdded = true;
+                                    }
+                                    
+                                    // Update stage if provided
+                                    if (data.stage) {
+                                        currentStage = data.stage;
+                                        updateContextMonitor();
+                                    }
                                 }
                                 else if (data.type === 'response') {
                                     // Fallback for non-chunked responses
@@ -520,14 +967,26 @@
                                         agentResponseDiv = addAgentMessage('');
                                     }
                                     agentResponse = data.content;
-                                    agentResponseDiv.textContent = agentResponse;
+                                    agentResponseDiv.innerHTML = formatMessage(agentResponse);
                                     addProcessItem('response', 'Generated final response');
                                 }
                                 else if (data.type === 'done') {
                                     // Stream complete
                                     if (!agentResponseDiv && agentResponse) {
-                                        addAgentMessage(agentResponse);
+                                        const finalMsg = addAgentMessage('');
+                                        finalMsg.innerHTML = formatMessage(agentResponse);
                                     }
+                                    
+                                    // Handle struggle_stats from done event (only if not already added)
+                                    if (data.struggle_stats && !struggleSummaryAdded) {
+                                        updateStruggleBadge(data.struggle_stats);
+                                        addStruggleSummary(data.struggle_stats);
+                                        struggleSummaryAdded = true;
+                                    }
+                                    
+                                    // Finalize response card
+                                    currentResponseCard = null;
+                                    currentResponseProcessItems = [];
                                 }
                                 else if (data.type === 'error') {
                                     // Error occurred
@@ -563,15 +1022,23 @@
         window.addEventListener('load', () => {
             userInput.focus();
             
-            // Check backend health
+            // Check backend health and get stage info
             fetch(`${API_URL}/health`)
                 .then(r => r.json())
                 .then(data => {
                     console.log('Backend status:', data);
+                    
+                    // Update stage from backend response if available
+                    if (data.stage) {
+                        currentStage = data.stage;
+                        updateContextMonitor();
+                    }
                 })
                 .catch(e => {
                     console.error('Backend not reachable:', e);
                     addAgentMessage('⚠️ Backend not connected. Please ensure the server is running on http://localhost:8000');
+                    // Set default subtitle when backend unavailable
+                    document.getElementById('stageSubtitle').textContent = 'Backend Disconnected';
                 });
         });
 
