@@ -194,7 +194,7 @@ def main():
     print("    ⚠️  Context loss in complex multi-step requests")
     print("    ⚠️  Difficulty planning multiple actions efficiently")
     print("\n  Solution Preview:")
-    print("    🧠 Stage 3: Advanced patterns (ReWOO, Reflexion, Plan-and-Execute)")
+    print("    🧠 Stage 3: Advanced patterns (ReWOO, Reflection, Plan-and-Execute)")
     print("    👥 Stage 4: Multi-agent architectures with specialization")
     print("="*80)
     print("\n🚀 Try the interactive web UI:")

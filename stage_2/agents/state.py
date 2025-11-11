@@ -4,17 +4,16 @@ Defines the structure of data flowing through the agent graph.
 Same as Stage 1 - demonstrates that complexity comes from tools, not state.
 """
 
-from typing import TypedDict, Annotated, Sequence
-from langchain_core.messages import BaseMessage
-from langgraph.graph.message import add_messages
+from common.base_state import BaseAgentState
 
 
-class AgentState(TypedDict):
+class AgentState(BaseAgentState):
     """
     The state of our agent represents the data flowing through the graph.
     
     In Stage 2, we keep the same simple state as Stage 1. The complexity
     and struggles come from having 7 tools instead of 2, not from state management.
+    Inherits the base state structure from common.base_state.
     The `add_messages` reducer properly handles message accumulation.
     
     Attributes:
@@ -23,5 +22,4 @@ class AgentState(TypedDict):
                   including tool calls and tool responses.
         iterations: Counter for ReAct loop iterations to prevent infinite loops.
     """
-    messages: Annotated[Sequence[BaseMessage], add_messages]
-    iterations: int
+    pass

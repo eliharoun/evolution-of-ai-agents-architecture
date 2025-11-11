@@ -18,7 +18,7 @@ Transform from a simple chatbot to production-ready multi-agent systems through 
 |-------|-------|--------------|--------------|
 | **🏗️ Stage 1** | **ReAct Foundation** | Single Agent | 2 tools, streaming, RAG, AI assistant style UI |
 | **🔧 Stage 2** | **Sophisticated Single** | Enhanced Agent | 7 tools, struggle detection, stateful ops |
-| **🧠 Stage 3** | **Advanced Patterns** | Smart Agent | ReWOO, Reflexion, Plan-and-Execute |
+| **🧠 Stage 3** | **Advanced Patterns** | Smart Agent | ReWOO, Reflection, Plan-and-Execute |
 | **👥 Stage 4** | **Multi-Agent** | Agent Teams | Supervisor, Pipeline, Collaborative |
 | **📊 Stage 5** | **Production Analysis** | Optimized System | Performance comparison, pattern selection |
 
@@ -153,7 +153,7 @@ For other questions, please use a general-purpose assistant.
 
 **What you'll build:**
 - **ReWOO** - Plan all tools upfront, then execute
-- **Reflexion** - Self-evaluation and learning from mistakes  
+- **Reflection** - Self-evaluation and learning from mistakes  
 - **Plan-and-Execute** - Dynamic planning with adaptation
 
 **Concepts:**

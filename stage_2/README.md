@@ -102,14 +102,6 @@ uvicorn common.backend.api:app --reload
 open frontend/index.html
 ```
 
-**New UI Features:**
-- **Context Monitor**: Real-time tracking of messages, tokens, tool calls, stage
-- **Response Cards**: Collapsible cards grouping each agent response
-- **Struggle Display**: Red badges + detailed struggle analysis in pale red cards
-- **Dynamic Stage Display**: Shows "Stage 2: Advanced ReAct Agent" from backend
-- **Message Formatting**: Markdown rendering for structured agent responses
-- **Enhanced Colors**: Dark background, pale blue user messages, pale grey agent messages
-
 ## Demo Scenarios
 
 ### Simple Scenarios (Work Fine with OpenAI)
@@ -144,16 +136,38 @@ open frontend/index.html
 
 ## Configuration
 
-Uses same `.env` configuration as Stage 1, plus stage selection:
+Uses same `.env` configuration as Stage 1, plus stage selection and checkpointing:
 
 ```bash
-MODEL_TYPE=openai  # Recommended: openai (best tool calling)
-STAGE=2            # Set to 2 for this stage
+MODEL_TYPE=openai              # Recommended: openai (best tool calling)
+STAGE=2                        # Set to 2 for this stage
+ENABLE_CHECKPOINTING=true      # Enable conversation memory (optional)
 
 # Add corresponding API keys:
 OPENAI_API_KEY=your_key_here
 # or ANTHROPIC_API_KEY=your_key_here
 ```
+
+### 💾 Checkpointing (Conversation Memory)
+
+Stage 2 now supports **optional checkpointing** for maintaining conversation history:
+
+**When Enabled:**
+- Agent remembers previous messages in the conversation
+- Follow-up questions work naturally: "What order did I ask about?"
+- Session-based memory (60-minute timeout)
+- Uses LangGraph's InMemorySaver
+
+**To Enable:**
+```bash
+ENABLE_CHECKPOINTING=true STAGE=2 python -m common.backend.api
+```
+
+**Test Queries:**
+1. "What's the status of order #12345?"
+2. "What order did I just ask about?" ← Agent remembers #12345!
+
+**Note**: ReAct (Stage 2) is designed for multi-turn conversations, so checkpointing works naturally. ReWOO (Stage 3.1) is single-turn by design.
 
 **Important**: Ollama/llama3.1 has poor tool-calling capabilities and may output tool descriptions instead of making actual tool calls. OpenAI and Anthropic models work much better.
 
@@ -201,7 +215,7 @@ OPENAI_API_KEY=your_key_here
 
 **Stage 3** will solve these problems using advanced single-agent patterns:
 - **ReWOO** - Plan all tool calls upfront, then execute efficiently
-- **Reflexion** - Self-evaluate and improve responses
+- **Reflection** - Self-evaluate and improve responses
 - **Plan-and-Execute** - Create dynamic plans that adapt to findings
 
 The same complex scenarios that break Stage 2 will work smoothly in Stage 3.

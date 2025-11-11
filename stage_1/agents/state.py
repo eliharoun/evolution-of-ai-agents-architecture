@@ -3,16 +3,15 @@ State management for the customer support agent.
 Defines the structure of data flowing through the agent graph.
 """
 
-from typing import TypedDict, Annotated, Sequence
-from langchain_core.messages import BaseMessage
-from langgraph.graph.message import add_messages
+from common.base_state import BaseAgentState
 
 
-class AgentState(TypedDict):
+class AgentState(BaseAgentState):
     """
     The state of our agent represents the data flowing through the graph.
     
-    In Phase 1, we keep state simple with just messages and iteration counter.
+    In Stage 1, we keep state simple with just messages and iteration counter.
+    Inherits the base state structure from common.base_state.
     The `add_messages` reducer properly handles message accumulation, ensuring
     tool calls and responses are correctly linked.
     
@@ -22,5 +21,4 @@ class AgentState(TypedDict):
                   including tool calls and tool responses.
         iterations: Counter for ReAct loop iterations to prevent infinite loops.
     """
-    messages: Annotated[Sequence[BaseMessage], add_messages]
-    iterations: int
+    pass

@@ -1,13 +1,17 @@
 """
 LangGraph workflow orchestration for Stage 2 sophisticated agent.
-Same architecture as Stage 1, but with struggle monitoring for 7-tool complexity.
+Same architecture as Stage 1, but with struggle monitoring and optional checkpointing.
 """
 
+from typing import Optional
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import HumanMessage
 
 from stage_2.agents.state import AgentState
 from stage_2.agents.react_agent import ReactAgent
+from common.base_workflow import BaseWorkflow
 from common.model_factory import ModelType
 from common.config import config
 from common.logging_config import get_logger
@@ -16,40 +20,35 @@ from common.monitoring.struggle_analyzer import StruggleAnalyzer
 logger = get_logger(__name__)
 
 
-class AgentWorkflow:
+class AgentWorkflow(BaseWorkflow):
     """
-    LangGraph workflow for the sophisticated customer support agent.
+    LangGraph workflow for the sophisticated customer support agent with optional checkpointing.
     
-    Same pattern as Stage 1:
+    Pattern:
     1. START → Agent (reasoning and tool selection from 7 tools)
     2. Agent → [tools_condition decides] → Tools OR END
     3. Tools → Agent (observation and next action)
     
-    The difference: With 7 tools available, the agent will struggle with:
-    - Tool selection confusion
-    - Sequential processing bottlenecks
-    - Context loss across multiple iterations
+    Features:
+    - 7 tools (reveals ReAct limitations)
+    - Struggle monitoring
+    - Optional checkpointing for conversation memory
     """
     
-    def __init__(self, model_type: ModelType = None):
+    def __init__(self, model_type: Optional[ModelType] = None, enable_checkpointing: Optional[bool] = None):
         """
-        Initialize the workflow with struggle monitoring.
+        Initialize the workflow with struggle monitoring and optional checkpointing.
         
         Args:
-            model_type: Type of model to use ("openai", "anthropic", or "ollama")
-                       If None, uses MODEL_TYPE from config
+            model_type: Type of model to use
+            enable_checkpointing: Enable state persistence (defaults to config)
         """
-        # Use config MODEL_TYPE if not explicitly provided
-        self.model_type = model_type or config.MODEL_TYPE
+        super().__init__(model_type, enable_checkpointing)
         self.agent = ReactAgent(model_type=self.model_type)
-        self.workflow = None
-        
-        # Initialize struggle analyzer (standalone tool)
         self.struggle_analyzer = StruggleAnalyzer(stage=2, enable_logging=True)
+        self.workflow = self._build_graph()
         
-        logger.info(f"Stage 2 workflow initializing with model_type={self.model_type}, from_config={model_type is None}")
         logger.info("Stage 2 workflow will monitor for agent struggles with 7-tool complexity")
-        self._build_graph()
     
     def _build_graph(self):
         """
@@ -88,10 +87,8 @@ class AgentWorkflow:
         # After tools execute, always return to agent for observation
         graph.add_edge("tools", "agent")
         
-        # Compile the graph (stateless like Stage 1)
-        self.workflow = graph.compile()
-        
-        logger.info("Stage 2 workflow built with struggle monitoring enabled")
+        # Compile with optional checkpointing
+        return self._compile_graph(graph)
     
     def _agent_with_monitoring(self, state: AgentState) -> dict:
         """
@@ -137,76 +134,91 @@ class AgentWorkflow:
         """Reset struggle statistics."""
         self.struggle_analyzer.reset()
     
-    def invoke(self, user_input: str) -> dict:
+    def _invoke_impl(self, user_input: str, config: Optional[RunnableConfig], **kwargs) -> dict:
         """
-        Invoke the agent with a user message.
+        Execute Stage 2 workflow with optional checkpointing.
         
         Args:
-            user_input: User's message/question
+            user_input: User query/task
+            config: Optional config with thread_id (for checkpointing)
             
         Returns:
-            Dictionary with final state including messages and struggle stats
+            Final state with result and struggle stats
         """
-        from langchain_core.messages import HumanMessage
-        
         # Reset struggle analyzer for new invocation
         self.struggle_analyzer.reset()
         
         logger.info(f"Stage 2 workflow invoke - input: {user_input[:100]}...")
         
-        initial_state = {
-            "messages": [HumanMessage(content=user_input)],
-            "iterations": 0
-        }
+        # Load previous state if checkpointing enabled
+        if config and self.enable_checkpointing:
+            try:
+                previous_state = self.workflow.get_state(config)
+                if previous_state and previous_state.values:
+                    # Continue conversation with history
+                    initial_state = previous_state.values.copy()
+                    initial_state["messages"].append(HumanMessage(content=user_input))
+                else:
+                    # No previous state
+                    initial_state = {"messages": [HumanMessage(content=user_input)], "iterations": 0}
+            except Exception:
+                initial_state = {"messages": [HumanMessage(content=user_input)], "iterations": 0}
+        else:
+            initial_state = {"messages": [HumanMessage(content=user_input)], "iterations": 0}
         
         try:
-            result = self.workflow.invoke(initial_state)
+            result = self.workflow.invoke(initial_state, config) if config else self.workflow.invoke(initial_state)
             
             # Add struggle statistics to result
             result["struggle_stats"] = self.get_struggle_stats()
             
-            logger.info(f"Stage 2 workflow complete - iterations: {result.get('iterations', 0)}, messages: {len(result.get('messages', []))}")
+            logger.info(f"Stage 2 complete - iterations: {result.get('iterations', 0)}, messages: {len(result.get('messages', []))}")
             
-            # Log struggle summary if any detected
             if self.struggle_analyzer.has_struggles():
-                summary = self.struggle_analyzer.get_struggle_summary()
-                logger.warning(f"Stage 2 struggles detected: {summary}")
+                logger.warning(f"Stage 2 struggles: {self.struggle_analyzer.get_struggle_summary()}")
             
             return result
-            
         except Exception as e:
             logger.error(f"Stage 2 workflow error: {str(e)}")
             raise
     
-    def stream(self, user_input: str):
+    def _stream_impl(self, user_input: str, config: Optional[RunnableConfig], **kwargs):
         """
-        Stream the agent's response in real-time.
+        Stream Stage 2 workflow with optional checkpointing.
         
         Args:
-            user_input: User's message/question
+            user_input: User query/task
+            config: Optional config with thread_id (for checkpointing)
             
         Yields:
-            State updates as they occur from each node
+            State updates as they occur
         """
-        from langchain_core.messages import HumanMessage
-        
         # Reset struggle analyzer for new stream
         self.struggle_analyzer.reset()
         
         logger.info(f"Stage 2 workflow stream start - input: {user_input[:100]}...")
         
-        initial_state = {
-            "messages": [HumanMessage(content=user_input)],
-            "iterations": 0
-        }
+        # Load previous state if checkpointing enabled  
+        if config and self.enable_checkpointing:
+            try:
+                previous_state = self.workflow.get_state(config)
+                if previous_state and previous_state.values:
+                    initial_state = previous_state.values.copy()
+                    initial_state["messages"].append(HumanMessage(content=user_input))
+                else:
+                    initial_state = {"messages": [HumanMessage(content=user_input)], "iterations": 0}
+            except Exception:
+                initial_state = {"messages": [HumanMessage(content=user_input)], "iterations": 0}
+        else:
+            initial_state = {"messages": [HumanMessage(content=user_input)], "iterations": 0}
         
         try:
-            for chunk in self.workflow.stream(initial_state):
-                # Add struggle stats to chunks for frontend display
+            stream_method = self.workflow.stream(initial_state, config) if config else self.workflow.stream(initial_state)
+            for chunk in stream_method:
+                # Add struggle stats to chunks
                 if "agent" in chunk:
                     chunk["struggle_stats"] = self.get_struggle_stats()
                 yield chunk
-                
         except Exception as e:
             logger.error(f"Stage 2 workflow stream error: {str(e)}")
             raise
