@@ -34,8 +34,8 @@ class ReactAgent:
     
     def __init__(
         self,
-        model_type: ModelType = "openai",
-        model_name: Optional[str] = None,
+        model_type: ModelType,
+        model_name: str,
         temperature: float = 0
     ):
         """

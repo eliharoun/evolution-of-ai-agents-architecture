@@ -11,6 +11,7 @@ from stage_1.agents.react_agent import ReactAgent
 from common.model_factory import ModelType
 from common.config import config
 from common.logging_config import get_logger
+from typing import cast
 
 logger = get_logger(__name__)
 
@@ -27,20 +28,16 @@ class AgentWorkflow:
     This creates the ReAct loop: Thought → Action → Observation
     """
     
-    def __init__(self, model_type: ModelType = None):
-        """
-        Initialize the workflow.
-        
-        Args:
-            model_type: Type of model to use ("openai", "anthropic", or "ollama")
-                       If None, uses MODEL_TYPE from config
-        """
-        # Use config MODEL_TYPE if not explicitly provided
-        self.model_type = model_type or config.MODEL_TYPE
-        self.agent = ReactAgent(model_type=self.model_type)
+    def __init__(self):
+        """Initialize the workflow with models from config."""
+        # Load model configuration from config
+        self.agent = ReactAgent(
+            model_type=cast(ModelType, config.DEFAULT_MODEL_TYPE),
+            model_name=config.DEFAULT_MODEL_NAME
+        )
         self.workflow = None
         
-        logger.info(f"Workflow initializing with model_type={self.model_type}, from_config={model_type is None}")
+        logger.info(f"Workflow initializing with model={config.DEFAULT_MODEL_TYPE}:{config.DEFAULT_MODEL_NAME}")
         self._build_graph()
     
     def _build_graph(self):

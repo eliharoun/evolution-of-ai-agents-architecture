@@ -27,15 +27,13 @@ class BaseWorkflow(ABC):
     - Subclass hook for graph building
     """
     
-    def __init__(self, model_type: Optional[ModelType] = None, enable_checkpointing: Optional[bool] = None):
+    def __init__(self, enable_checkpointing: Optional[bool] = None):
         """
         Initialize base workflow with optional checkpointing.
         
         Args:
-            model_type: Model type to use (defaults to config.MODEL_TYPE)
             enable_checkpointing: Enable checkpointing (defaults to config.ENABLE_CHECKPOINTING)
         """
-        self.model_type = model_type or config.MODEL_TYPE
         self.enable_checkpointing = enable_checkpointing or config.ENABLE_CHECKPOINTING
         
         # Initialize checkpointer if enabled
@@ -47,10 +45,10 @@ class BaseWorkflow(ABC):
         
         # Log checkpointing status prominently
         if self.enable_checkpointing:
-            logger.info(f"✓ {self.__class__.__name__} initialized WITH CHECKPOINTING - model: {self.model_type}")
+            logger.info(f"✓ {self.__class__.__name__} initialized WITH CHECKPOINTING")
             logger.info(f"  Checkpointer: {type(self.checkpointer).__name__}")
         else:
-            logger.info(f"  {self.__class__.__name__} initialized WITHOUT checkpointing - model: {self.model_type}")
+            logger.info(f"  {self.__class__.__name__} initialized WITHOUT checkpointing")
     
     @abstractmethod
     def _build_graph(self):

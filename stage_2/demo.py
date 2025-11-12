@@ -111,7 +111,7 @@ def main():
     print("="*80)
     
     print(f"\n🔧 Initializing Stage 2 agent...")
-    print(f"   Using model type: {config.MODEL_TYPE}")
+    print(f"   Using model: {config.DEFAULT_MODEL_TYPE}:{config.DEFAULT_MODEL_NAME}")
     
     try:
         workflow = AgentWorkflow()
@@ -198,8 +198,8 @@ def main():
     print("    👥 Stage 4: Multi-agent architectures with specialization")
     print("="*80)
     print("\n🚀 Try the interactive web UI:")
-    print("   1. Start backend: STAGE=2 uvicorn common.backend.api:app --reload")
-    print("   2. Or: uvicorn common.backend.api:app --reload then POST /stage/2")
+    print("   1. Start backend: STAGE=2 uvicorn backend.api:app --reload")
+    print("   2. Or: uvicorn backend.api:app --reload then POST /stage/2")
     print("   3. Open: frontend/index.html in your browser") 
     print("   4. Try the complex scenario to see struggles in real-time\n")
 

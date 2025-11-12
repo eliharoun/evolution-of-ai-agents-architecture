@@ -28,9 +28,9 @@ class ModelFactory:
     
     @staticmethod
     def create_model(
-        model_type: Optional[ModelType] = None,
-        model_name: Optional[str] = None,
-        temperature: float = 0,
+        model_type: ModelType,
+        model_name: str,
+        temperature: Optional[float] = None,
         **kwargs
     ):
         """
@@ -38,9 +38,8 @@ class ModelFactory:
         
         Args:
             model_type: Type of model ("openai", "anthropic", or "ollama")
-                       If None, uses MODEL_TYPE from config
-            model_name: Specific model name (uses config default if None)
-            temperature: Temperature for generation (0-1)
+            model_name: Specific model name
+            temperature: Temperature for generation (0-1). If None, uses DEFAULT_TEMPERATURE from config
             **kwargs: Additional provider-specific parameters
             
         Returns:
@@ -50,9 +49,6 @@ class ModelFactory:
             ValueError: If model_type is not supported or required config is missing
             
         Examples:
-            >>> # Use config MODEL_TYPE
-            >>> model = ModelFactory.create_model()
-            
             >>> # OpenAI model
             >>> model = ModelFactory.create_model("openai", "gpt-4o-mini")
             
@@ -62,11 +58,10 @@ class ModelFactory:
             >>> # Local Ollama model
             >>> model = ModelFactory.create_model("ollama", "llama2")
         """
-        # Use config.MODEL_TYPE if not explicitly provided
-        model_type = model_type or config.MODEL_TYPE
+        # Use config default temperature if not explicitly provided
+        temperature = temperature if temperature is not None else config.DEFAULT_TEMPERATURE
         
-        from_config = kwargs.get('from_config', model_type == config.MODEL_TYPE)
-        logger.info(f"Creating model - type: {model_type}, name: {model_name}, temp: {temperature}, from_config: {from_config}")
+        logger.info(f"Creating model - type: {model_type}, name: {model_name}, temp: {temperature}")
         
         if model_type == "openai":
             return ModelFactory._create_openai_model(model_name, temperature, **kwargs)
@@ -85,7 +80,7 @@ class ModelFactory:
     
     @staticmethod
     def _create_openai_model(
-        model_name: Optional[str],
+        model_name: str,
         temperature: float,
         **kwargs
     ) -> ChatOpenAI:
@@ -106,8 +101,6 @@ class ModelFactory:
                 "Set it in .env file or use a different model_type."
             )
         
-        model_name = model_name or config.DEFAULT_MODEL
-        
         model = ChatOpenAI(
             model=model_name,
             temperature=temperature,
@@ -120,7 +113,7 @@ class ModelFactory:
     
     @staticmethod
     def _create_anthropic_model(
-        model_name: Optional[str],
+        model_name: str,
         temperature: float,
         **kwargs
     ) -> ChatAnthropic:
@@ -141,9 +134,6 @@ class ModelFactory:
                 "Set it in .env file or use a different model_type."
             )
         
-        # Default to Claude 3 Sonnet if no model specified
-        model_name = model_name or "claude-3-sonnet-20240229"
-        
         model = ChatAnthropic(
             model=model_name,
             temperature=temperature,
@@ -156,7 +146,7 @@ class ModelFactory:
     
     @staticmethod
     def _create_ollama_model(
-        model_name: Optional[str],
+        model_name: str,
         temperature: float,
         **kwargs
     ) -> ChatOllama:
@@ -171,7 +161,6 @@ class ModelFactory:
         Returns:
             ChatOllama instance
         """
-        model_name = model_name or config.OLLAMA_MODEL
         base_url = kwargs.pop("base_url", config.OLLAMA_BASE_URL)
         
         model = ChatOllama(
@@ -183,24 +172,3 @@ class ModelFactory:
         
         logger.info(f"Ollama model created - model: {model_name}, base_url: {base_url}, temperature: {temperature}")
         return model
-    
-    @staticmethod
-    def get_available_providers() -> list[str]:
-        """
-        Get list of available model providers based on configuration.
-        
-        Returns:
-            List of provider names that have API keys configured
-        """
-        providers = []
-        
-        if config.OPENAI_API_KEY:
-            providers.append("openai")
-        
-        if config.ANTHROPIC_API_KEY:
-            providers.append("anthropic")
-        
-        # Ollama is always available (local)
-        providers.append("ollama")
-        
-        return providers

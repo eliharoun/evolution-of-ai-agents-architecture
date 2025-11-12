@@ -16,6 +16,7 @@ from common.model_factory import ModelType
 from common.config import config
 from common.logging_config import get_logger
 from common.monitoring.struggle_analyzer import StruggleAnalyzer
+from typing import cast
 
 logger = get_logger(__name__)
 
@@ -35,16 +36,19 @@ class AgentWorkflow(BaseWorkflow):
     - Optional checkpointing for conversation memory
     """
     
-    def __init__(self, model_type: Optional[ModelType] = None, enable_checkpointing: Optional[bool] = None):
+    def __init__(self, enable_checkpointing: Optional[bool] = None):
         """
         Initialize the workflow with struggle monitoring and optional checkpointing.
         
         Args:
-            model_type: Type of model to use
             enable_checkpointing: Enable state persistence (defaults to config)
         """
-        super().__init__(model_type, enable_checkpointing)
-        self.agent = ReactAgent(model_type=self.model_type)
+        super().__init__(enable_checkpointing)
+        # Load model configuration from config
+        self.agent = ReactAgent(
+            model_type=cast(ModelType, config.DEFAULT_MODEL_TYPE),
+            model_name=config.DEFAULT_MODEL_NAME
+        )
         self.struggle_analyzer = StruggleAnalyzer(stage=2, enable_logging=True)
         self.workflow = self._build_graph()
         

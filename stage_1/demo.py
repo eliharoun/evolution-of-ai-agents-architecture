@@ -86,7 +86,7 @@ def main():
     print("="*80)
     
     print("\n🔧 Initializing agent...")
-    print(f"   Using model type: {config.MODEL_TYPE}")
+    print(f"   Using model: {config.DEFAULT_MODEL_TYPE}:{config.DEFAULT_MODEL_NAME}")
     
     try:
         # Uses MODEL_TYPE from config (set in .env)
@@ -157,7 +157,7 @@ def main():
     print("    ✅ Multi-tool coordination")
     print("="*80)
     print("\n🚀 Try the interactive web UI:")
-    print("   1. Start backend: uvicorn common.backend.api:app --reload")
+    print("   1. Start backend: uvicorn backend.api:app --reload")
     print("   2. Open: frontend/index.html in your browser")
     print("   3. Backend auto-loads Stage 1 (2 tools) by default\n")
 
