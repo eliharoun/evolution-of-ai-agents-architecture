@@ -46,8 +46,6 @@ class ReactAgent:
             model_name: Specific model name (uses config default if None)
             temperature: Temperature for model generation
         """
-        self.model_type = model_type
-        self.temperature = temperature
         
         # Use ModelFactory to create the appropriate model
         self.model = ModelFactory.create_model(

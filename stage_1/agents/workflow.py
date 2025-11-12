@@ -1,13 +1,17 @@
 """
 LangGraph workflow orchestration for Stage 1 ReAct agent.
-Uses tools_condition for cleaner routing logic.
+Uses tools_condition for cleaner routing logic and extends BaseWorkflow.
 """
 
+from typing import Optional
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import HumanMessage
 
 from stage_1.agents.state import AgentState
 from stage_1.agents.react_agent import ReactAgent
+from common.base_workflow import BaseWorkflow
 from common.model_factory import ModelType
 from common.config import config
 from common.logging_config import get_logger
@@ -16,7 +20,7 @@ from typing import cast
 logger = get_logger(__name__)
 
 
-class AgentWorkflow:
+class AgentWorkflow(BaseWorkflow):
     """
     LangGraph workflow for the customer support agent.
     
@@ -28,17 +32,19 @@ class AgentWorkflow:
     This creates the ReAct loop: Thought → Action → Observation
     """
     
-    def __init__(self):
-        """Initialize the workflow with models from config."""
+    def __init__(self, enable_checkpointing: Optional[bool] = None):
+        """Initialize the workflow with models from config. Stage 1 is always stateless."""
+        # Force checkpointing to be disabled for Stage 1 (stateless by design)
+        super().__init__(False)
+        
         # Load model configuration from config
         self.agent = ReactAgent(
             model_type=cast(ModelType, config.DEFAULT_MODEL_TYPE),
             model_name=config.DEFAULT_MODEL_NAME
         )
-        self.workflow = None
         
         logger.info(f"Workflow initializing with model={config.DEFAULT_MODEL_TYPE}:{config.DEFAULT_MODEL_NAME}")
-        self._build_graph()
+        self.workflow = self._build_graph()
     
     def _build_graph(self):
         """
@@ -79,73 +85,66 @@ class AgentWorkflow:
         # After tools execute, always return to agent for observation
         graph.add_edge("tools", "agent")
         
-        # Compile the graph (no checkpointer for Phase 1 - stateless as requested)
-        self.workflow = graph.compile()
+        # Compile with optional checkpointing using BaseWorkflow's helper
+        compiled_graph = self._compile_graph(graph)
         
-        logger.info("Workflow built with nodes=['agent', 'tools'], stateless=True")
+        logger.info(f"Workflow built with nodes=['agent', 'tools'], checkpointing={'enabled' if self.enable_checkpointing else 'disabled'}")
+        return compiled_graph
     
-    def get_app(self):
+    def _invoke_impl(self, user_input: str, config: Optional[RunnableConfig], **kwargs) -> dict:
         """
-        Get the compiled application.
-        
-        Returns:
-            Compiled LangGraph application
-        """
-        return self.workflow
-    
-    def invoke(self, user_input: str) -> dict:
-        """
-        Invoke the agent with a user message.
+        Execute Stage 1 workflow (always stateless - no checkpointing).
         
         Args:
-            user_input: User's message/question
+            user_input: User query/task
+            config: Optional config (ignored - Stage 1 is stateless)
             
         Returns:
-            Dictionary with final state including messages
+            Final state with result
         """
-        from langchain_core.messages import HumanMessage
+        logger.info(f"Stage 1 workflow invoke - input: {user_input[:100]}...")
         
-        logger.info(f"Workflow invoke - input: {user_input[:100]}...")
-        
+        # Stage 1 is always stateless - start fresh each time
         initial_state = {
             "messages": [HumanMessage(content=user_input)],
             "iterations": 0
         }
         
         try:
+            # Always invoke without config (stateless)
             result = self.workflow.invoke(initial_state)
             
-            logger.info(f"Workflow complete - iterations: {result.get('iterations', 0)}, messages: {len(result.get('messages', []))}")
+            logger.info(f"Stage 1 complete - iterations: {result.get('iterations', 0)}, messages: {len(result.get('messages', []))}")
             
             return result
             
         except Exception as e:
-            logger.error(f"Workflow error: {str(e)}")
+            logger.error(f"Stage 1 workflow error: {str(e)}")
             raise
     
-    def stream(self, user_input: str):
+    def _stream_impl(self, user_input: str, config: Optional[RunnableConfig], **kwargs):
         """
-        Stream the agent's response in real-time.
+        Stream Stage 1 workflow (always stateless - no checkpointing).
         
         Args:
-            user_input: User's message/question
+            user_input: User query/task
+            config: Optional config (ignored - Stage 1 is stateless)
             
         Yields:
-            State updates as they occur from each node
+            State updates as they occur
         """
-        from langchain_core.messages import HumanMessage
+        logger.info(f"Stage 1 workflow stream start - input: {user_input[:100]}...")
         
-        logger.info(f"Workflow stream start - input: {user_input[:100]}...")
-        
+        # Stage 1 is always stateless - start fresh each time
         initial_state = {
             "messages": [HumanMessage(content=user_input)],
             "iterations": 0
         }
         
         try:
+            # Always stream without config (stateless)
             for chunk in self.workflow.stream(initial_state):
                 yield chunk
-                
         except Exception as e:
-            logger.error(f"Workflow stream error: {str(e)}")
+            logger.error(f"Stage 1 workflow stream error: {str(e)}")
             raise
