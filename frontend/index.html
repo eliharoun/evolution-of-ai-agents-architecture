@@ -25,14 +25,14 @@
             max-width: 1400px;
             width: 100%;
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 250px 2fr 1fr;
             gap: 20px;
             height: 90vh;
             transition: grid-template-columns 0.3s ease;
         }
 
         .container.panel-collapsed {
-            grid-template-columns: 1fr 0fr;
+            grid-template-columns: 250px 1fr 0fr;
         }
 
         .chat-panel, .process-panel {
@@ -231,6 +231,50 @@
             font-size: 14px;
             line-height: 1.5;
         }
+        
+        /* Expandable content styling - start expanded for better UX */
+        .expandable-content {
+            max-height: none;
+            overflow: visible;
+            position: relative;
+            transition: max-height 0.3s ease;
+        }
+        
+        .expandable-content.collapsed {
+            max-height: 150px;
+            overflow: hidden;
+        }
+        
+        .expand-button {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .expand-button:hover {
+            background: #5568d3;
+        }
+        
+        .plan-step {
+            padding: 8px 12px;
+            margin: 6px 0;
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        
+        .evidence-var {
+            font-weight: 700;
+            color: #667eea;
+        }
 
         .tool-badge {
             display: inline-block;
@@ -297,10 +341,102 @@
             transition: all 0.3s ease;
         }
 
+        /* Stage Selector Sidebar */
+        .stage-selector {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        .stage-selector-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .stage-selector-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .stage-dropdown {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            background: white;
+            margin-bottom: 15px;
+        }
+
+        .stage-dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stage-info {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+            border-left: 3px solid #667eea;
+        }
+
+        .tools-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .tools-list-title {
+            font-weight: 600;
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-item {
+            padding: 8px 12px;
+            margin: 6px 0;
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .tool-item:hover {
+            background: #e3f2fd;
+            transform: translateX(2px);
+        }
+
+        .tool-item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .tool-item-desc {
+            color: #666;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
         /* Context Monitoring Widget */
         .context-monitor {
             position: fixed;
-            top: 20px;
+            top: 70px;
             right: 20px;
             background: white;
             padding: 15px 20px;
@@ -477,14 +613,82 @@
             flex: 1;
         }
 
+        /* Tab Navigation */
+        .tab-button {
+            padding: 8px 20px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: #e0e0e0;
+        }
+        
+        /* Debug Container */
+        #debugContainer {
+            display: none;
+        }
+        
+        #debugContainer.active {
+            display: grid;
+        }
+        
+        .checkpoint-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .checkpoint-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .checkpoint-item:hover {
+            background: #e3f2fd;
+            transform: translateX(4px);
+        }
+        
+        .checkpoint-item.selected {
+            background: #e3f2fd;
+            border-left-color: #1976d2;
+        }
+
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
-                grid-template-rows: 1fr auto;
+                grid-template-rows: auto 1fr auto;
             }
             
             .container.panel-collapsed {
-                grid-template-rows: 1fr auto;
+                grid-template-rows: auto 1fr auto;
+            }
+            
+            .stage-selector {
+                max-height: 200px;
+            }
+            
+            .stage-selector-content {
+                padding: 15px;
+            }
+            
+            .tools-list {
+                max-height: 100px;
             }
             
             .process-panel.collapsed {
@@ -515,9 +719,41 @@
             <span class="context-label">Stage:</span>
             <span class="context-value" id="currentStage">1</span>
         </div>
+        <div class="context-stat" id="threadIdStat" style="display: none;">
+            <span class="context-label">Thread:</span>
+            <span class="context-value" id="threadIdDisplay" style="font-size: 10px; cursor: pointer;" 
+                  onclick="copyThreadId()" title="Click to copy">...</span>
+        </div>
     </div>
 
-    <div class="container">
+    <!-- Tab Navigation -->
+    <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1100;">
+        <div style="background: white; border-radius: 12px; padding: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; gap: 8px; margin-bottom: 20px;">
+            <button class="tab-button active" onclick="switchTab('chat')" id="chatTab">
+                💬 Chat
+            </button>
+            <button class="tab-button" onclick="switchTab('debug')" id="debugTab">
+                🐛 Debug
+            </button>
+        </div>
+    </div>
+
+    <div class="container" id="chatContainer">
+        <!-- Stage Selector Sidebar -->
+        <div class="stage-selector" id="stageSelector">
+            <div class="stage-selector-header">
+                🎯 Stage Selector
+            </div>
+            <div class="stage-selector-content">
+                <select class="stage-dropdown" id="stageDropdown" onchange="switchStage()">
+                    <option value="">Loading stages...</option>
+                </select>
+                <div class="stage-info" id="stageInfo">
+                    Select a stage to begin
+                </div>
+                <div class="tools-list" id="toolsList"></div>
+            </div>
+        </div>
         <!-- Chat Panel -->
         <div class="chat-panel">
             <div class="panel-header">
@@ -564,6 +800,72 @@
         </div>
     </div>
 
+    <!-- Debug Container -->
+    <div class="container" id="debugContainer">
+        <!-- Stage Selector Sidebar (same as chat view) -->
+        <div class="stage-selector" id="stageSelectorDebug">
+            <div class="stage-selector-header">
+                🎯 Stage Selector
+            </div>
+            <div class="stage-selector-content">
+                <select class="stage-dropdown" id="stageDropdownDebug" onchange="switchStage()">
+                    <option value="">Loading stages...</option>
+                </select>
+                <div class="stage-info" id="stageInfoDebug">
+                    Select a stage to begin
+                </div>
+                <div class="tools-list" id="toolsListDebug"></div>
+            </div>
+        </div>
+        
+        <div class="chat-panel">
+            <div class="panel-header">
+                <div>🐛 Checkpoint Debugger</div>
+                <div class="subtitle">Time-travel through agent execution</div>
+            </div>
+            <div style="flex: 1; overflow-y: auto; padding: 20px;">
+                <!-- Checkpointing Toggle -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <div style="font-weight: 600; color: #333;">Checkpointing</div>
+                            <div style="font-size: 12px; color: #666;">Enable memory and time-travel debugging</div>
+                        </div>
+                        <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="checkpointingToggle" onchange="toggleCheckpointing()" style="opacity: 0; width: 0; height: 0;">
+                            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;">
+                                <span style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div id="checkpointingStatus" style="font-size: 12px; color: #666;">Loading status...</div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="threadIdInput" placeholder="Enter thread ID (from session)..." 
+                           style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <button onclick="loadCheckpoints()" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Load Checkpoints
+                    </button>
+                </div>
+                <div id="checkpointTimeline"></div>
+            </div>
+        </div>
+        
+        <div class="process-panel">
+            <div class="panel-header">
+                <div>📊 Checkpoint Details</div>
+                <div class="subtitle">State inspection</div>
+            </div>
+            <div style="flex: 1; overflow-y: auto; padding: 20px;" id="checkpointDetails">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <div>Select a checkpoint to view details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'http://localhost:8000';
         const chatMessages = document.getElementById('chatMessages');
@@ -581,6 +883,8 @@
         let responseCount = 0; // Separate counter for agent responses
         let currentResponseCard = null;
         let currentResponseProcessItems = [];
+        let sessionId = null; // Session ID for checkpointing memory
+        let currentThreadId = null; // Thread ID from backend (for debugging)
 
         // Update context monitor
         function updateContextMonitor() {
@@ -605,10 +909,23 @@
         // Update stage subtitle in panel header
         function updateStageSubtitle() {
             const subtitle = document.getElementById('stageSubtitle');
+            const processSubtitle = document.querySelector('.process-panel .subtitle');
+            
             if (currentStage === 1) {
                 subtitle.textContent = 'Stage 1: Simple ReAct Agent';
+                if (processSubtitle) processSubtitle.textContent = 'ReAct: Reasoning & Actions';
             } else if (currentStage === 2) {
                 subtitle.textContent = 'Stage 2: Advanced ReAct Agent';
+                if (processSubtitle) processSubtitle.textContent = 'ReAct: Reasoning & Actions';
+            } else if (currentStage === 3.1) {
+                subtitle.textContent = 'Stage 3.1: ReWOO Pattern';
+                if (processSubtitle) processSubtitle.textContent = 'ReWOO: Plan → Execute → Solve';
+            } else if (currentStage === 3.2) {
+                subtitle.textContent = 'Stage 3.2: Reflection Pattern';
+                if (processSubtitle) processSubtitle.textContent = 'Reflection: Generate → Critique → Refine';
+            } else if (currentStage === 3.3) {
+                subtitle.textContent = 'Stage 3.3: Plan-and-Execute';
+                if (processSubtitle) processSubtitle.textContent = 'Plan-Execute: Plan → Execute → Replan';
             } else {
                 subtitle.textContent = `Stage ${currentStage}`;
             }
@@ -811,14 +1128,25 @@
             return messageDiv;
         }
 
-        // Add thought process item
-        function addProcessItem(type, content, toolInfo = null) {
+        // Add thought process item (generic for Stage 1/2)
+        function addProcessItem(type, content, toolInfo = null, data = null) {
             clearEmptyStates();
             
             // Track tool calls for context monitoring
             if (toolInfo) {
                 toolCallCount++;
                 updateContextMonitor();
+            }
+            
+            // For Stage 3, use specialized handlers
+            if (currentStage >= 3 && data) {
+                if (data.node === 'plan') {
+                    addReWOOPlan(data);
+                    return;
+                } else if (data.node === 'tool') {
+                    addReWOOEvidence(data);
+                    return;
+                }
             }
             
             const itemDiv = document.createElement('div');
@@ -847,6 +1175,141 @@
                 const cardContent = currentResponseCard.querySelector('.response-card-content');
                 cardContent.appendChild(itemDiv);
                 currentResponseProcessItems.push(itemDiv);
+            } else {
+                processContent.appendChild(itemDiv);
+            }
+            
+            scrollToBottom(processContent);
+        }
+        
+        // Add ReWOO Plan display with proper formatting and numbering
+        function addReWOOPlan(data) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'process-item thought';
+            
+            const planText = data.plan || '';
+            const stepCount = data.content.match(/Planning complete: (\d+) steps/)?.[1] || '?';
+            
+            // Parse plan into individual steps
+            const planLines = planText.split('\n').filter(line => line.trim());
+            let stepsHtml = '';
+            let stepNumber = 0;
+            
+            planLines.forEach((line, idx) => {
+                if (line.trim().startsWith('Plan:')) {
+                    stepNumber++;
+                    // Parse: "Plan: <description> #E1 = Tool[args]"
+                    const evidenceMatch = line.match(/(#E\d+)\s*=\s*(\w+)\[([^\]]+)\]/);
+                    
+                    if (evidenceMatch) {
+                        const [fullMatch, evidenceVar, tool, args] = evidenceMatch;
+                        // Get everything before the evidence variable as description
+                        const description = line.substring(0, line.indexOf(evidenceVar)).replace(/Plan:\s*/, '').trim();
+                        
+                        stepsHtml += `
+                            <div class="plan-step">
+                                <div style="margin-bottom: 6px;">
+                                    <span style="display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">Step ${stepNumber}</span>
+                                    ${description}
+                                </div>
+                                <div style="margin-left: 12px; padding: 6px 10px; background: white; border-radius: 4px;">
+                                    <span class="evidence-var">${evidenceVar}</span> = ${tool}[${args}]
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Fallback if pattern doesn't match
+                        stepsHtml += `
+                            <div class="plan-step">
+                                <span style="display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">Step ${stepNumber}</span>
+                                ${line.replace(/Plan:\s*/, '')}
+                            </div>
+                        `;
+                    }
+                }
+            });
+            
+            const expandId = `plan-expand-${Date.now()}`;
+            
+            let contentHtml = `
+                <div class="process-item-type">📋 REWOO PLAN</div>
+                <div class="process-item-content">
+                    <strong>Generated ${stepCount}-step execution plan (all steps planned upfront)</strong>
+                    <div class="expandable-content" id="${expandId}">
+                        ${stepsHtml}
+                    </div>
+                    <div class="expand-button" data-target="${expandId}" style="display: none;">
+                        ▲ Collapse Plan
+                    </div>
+                </div>
+            `;
+            
+            itemDiv.innerHTML = contentHtml;
+            
+            // Add click handler for expand button
+            const expandBtn = itemDiv.querySelector('.expand-button');
+            if (expandBtn) {
+                expandBtn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const content = document.getElementById(targetId);
+                    if (!content) return;
+                    
+                    content.classList.toggle('collapsed');
+                    
+                    if (content.classList.contains('collapsed')) {
+                        this.textContent = '▼ Expand Plan';
+                    } else {
+                        this.textContent = '▲ Collapse Plan';
+                    }
+                });
+            }
+            
+            if (currentResponseCard) {
+                const cardContent = currentResponseCard.querySelector('.response-card-content');
+                cardContent.appendChild(itemDiv);
+            } else {
+                processContent.appendChild(itemDiv);
+            }
+            
+            scrollToBottom(processContent);
+        }
+        
+        // Add ReWOO Evidence display
+        function addReWOOEvidence(data) {
+            toolCallCount++;
+            updateContextMonitor();
+            
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'process-item observation';
+            
+            // Parse the evidence variable and result
+            const content = data.content;
+            const match = content.match(/^(#E\d+):\s*(.+)$/);
+            
+            let contentHtml = '';
+            if (match) {
+                const [, evidenceVar, evidenceResult] = match;
+                contentHtml = `
+                    <div class="process-item-type">🔍 EVIDENCE GATHERED</div>
+                    <div class="process-item-content">
+                        <strong>${evidenceVar}</strong>
+                        <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                            ${evidenceResult}
+                        </div>
+                    </div>
+                `;
+            } else {
+                contentHtml = `
+                    <div class="process-item-type">🔍 EVIDENCE GATHERED</div>
+                    <div class="process-item-content">${content}</div>
+                `;
+            }
+            
+            itemDiv.innerHTML = contentHtml;
+            
+            if (currentResponseCard) {
+                const cardContent = currentResponseCard.querySelector('.response-card-content');
+                cardContent.appendChild(itemDiv);
             } else {
                 processContent.appendChild(itemDiv);
             }
@@ -887,7 +1350,8 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        stream: true
+                        stream: true,
+                        session_id: getSessionId()
                     })
                 });
 
@@ -916,13 +1380,28 @@
                             try {
                                 const data = JSON.parse(line.slice(6));
 
-                                if (data.type === 'thought') {
-                                    // Agent is using a tool
-                                    addProcessItem('thought', data.content, data.tool_call);
+                                if (data.type === 'thread_id') {
+                                    // Capture thread_id from backend
+                                    currentThreadId = data.thread_id;
+                                    console.log('🔗 Thread ID:', currentThreadId);
+                                    
+                                    // Display in context monitor
+                                    const threadIdStat = document.getElementById('threadIdStat');
+                                    const threadIdDisplay = document.getElementById('threadIdDisplay');
+                                    threadIdStat.style.display = 'flex';
+                                    threadIdDisplay.textContent = currentThreadId.substring(0, 8) + '...';
+                                    threadIdDisplay.title = `Click to copy: ${currentThreadId}`;
+                                    
+                                    // Auto-populate debug tab
+                                    document.getElementById('threadIdInput').value = currentThreadId;
+                                }
+                                else if (data.type === 'thought') {
+                                    // Agent is using a tool or planning (Stage 3)
+                                    addProcessItem('thought', data.content, data.tool_call, data);
                                 }
                                 else if (data.type === 'observation') {
-                                    // Tool returned results
-                                    addProcessItem('observation', data.content);
+                                    // Tool returned results or evidence (Stage 3)
+                                    addProcessItem('observation', data.content, null, data);
                                 }
                                 else if (data.type === 'response_start') {
                                     // Starting word-by-word response streaming
@@ -1018,9 +1497,32 @@
             }
         });
 
+        // Generate or retrieve session ID
+        function getSessionId() {
+            if (!sessionId) {
+                // Try to get from localStorage
+                sessionId = localStorage.getItem('agent_session_id');
+                if (!sessionId) {
+                    // Generate new session ID
+                    sessionId = 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('agent_session_id', sessionId);
+                    console.log('Generated new session ID:', sessionId);
+                } else {
+                    console.log('Reusing session ID:', sessionId);
+                }
+            }
+            return sessionId;
+        }
+
         // Focus input on load
         window.addEventListener('load', () => {
             userInput.focus();
+            
+            // Initialize session ID
+            getSessionId();
+            
+            // Initialize stage selector
+            initializeStageSelector();
             
             // Check backend health and get stage info
             fetch(`${API_URL}/health`)
@@ -1055,6 +1557,571 @@
                 icon.textContent = '▶';
             } else {
                 icon.textContent = '−';
+            }
+        }
+
+        // Copy thread ID to clipboard
+        function copyThreadId() {
+            if (!currentThreadId) return;
+            
+            navigator.clipboard.writeText(currentThreadId).then(() => {
+                const display = document.getElementById('threadIdDisplay');
+                const originalText = display.textContent;
+                display.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    display.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        // ===== STAGE SELECTOR FUNCTIONS =====
+        
+        let stagesData = [];
+        let currentStageInfo = null;
+        
+        // Fetch available stages from backend
+        async function fetchStages() {
+            try {
+                const response = await fetch(`${API_URL}/stages`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Backend returns { available_stages: { "1": {...}, "2": {...} } }
+                // Convert to array format for frontend use
+                stagesData = [];
+                if (data.available_stages) {
+                    Object.entries(data.available_stages).forEach(([stageNum, stageInfo]) => {
+                        stagesData.push({
+                            stage_num: parseFloat(stageNum),
+                            name: stageInfo.name,
+                            description: stageInfo.description,
+                            tools_count: stageInfo.tools_count
+                        });
+                    });
+                }
+                
+                console.log('📋 Available stages:', stagesData);
+                populateStageDropdown();
+                
+            } catch (error) {
+                console.error('Error fetching stages:', error);
+                const dropdown = document.getElementById('stageDropdown');
+                dropdown.innerHTML = '<option value="">Error loading stages</option>';
+            }
+        }
+        
+        // Populate stage dropdown with available stages
+        function populateStageDropdown() {
+            const dropdowns = ['stageDropdown', 'stageDropdownDebug'];
+            
+            dropdowns.forEach(dropdownId => {
+                const dropdown = document.getElementById(dropdownId);
+                if (!dropdown) return;
+                
+                dropdown.innerHTML = '';
+                
+                if (stagesData.length === 0) {
+                    dropdown.innerHTML = '<option value="">No stages available</option>';
+                    return;
+                }
+                
+                // Add default option
+                dropdown.innerHTML = '<option value="">Select a stage...</option>';
+                
+                // Add each stage as an option
+                stagesData.forEach(stage => {
+                    const option = document.createElement('option');
+                    option.value = stage.stage_num;
+                    option.textContent = `Stage ${stage.stage_num}: ${stage.name}`;
+                    
+                    // Mark current stage as selected
+                    if (stage.stage_num === currentStage) {
+                        option.selected = true;
+                    }
+                    
+                    dropdown.appendChild(option);
+                });
+            });
+            
+            // Update stage info if current stage is set
+            if (currentStage) {
+                updateStageInfo(currentStage);
+                fetchStageTools(currentStage);
+            }
+        }
+        
+        // Switch to selected stage
+        async function switchStage() {
+            // Determine which dropdown was changed
+            const mainDropdown = document.getElementById('stageDropdown');
+            const debugDropdown = document.getElementById('stageDropdownDebug');
+            
+            let selectedStageNum;
+            if (event && event.target) {
+                selectedStageNum = event.target.value;
+                // Sync the other dropdown
+                if (event.target.id === 'stageDropdown') {
+                    debugDropdown.value = selectedStageNum;
+                } else if (event.target.id === 'stageDropdownDebug') {
+                    mainDropdown.value = selectedStageNum;
+                }
+            } else {
+                selectedStageNum = mainDropdown.value;
+            }
+            
+            if (!selectedStageNum) return;
+            
+            try {
+                console.log(`🔄 Switching to stage ${selectedStageNum}`);
+                
+                const response = await fetch(`${API_URL}/stage/${selectedStageNum}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Stage switched successfully:', data);
+                
+                // Update current stage
+                currentStage = parseFloat(selectedStageNum);
+                updateContextMonitor();
+                
+                // Update stage info and tools in both sidebars
+                updateStageInfo(selectedStageNum);
+                fetchStageTools(selectedStageNum);
+                
+                // Show success feedback
+                showStageNotification(`Switched to Stage ${selectedStageNum}: ${data.message || 'Unknown'}`);
+                
+            } catch (error) {
+                console.error('Error switching stage:', error);
+                showStageNotification(`Error switching to stage: ${error.message}`, 'error');
+                
+                // Reset both dropdowns to current stage
+                mainDropdown.value = currentStage.toString();
+                debugDropdown.value = currentStage.toString();
+            }
+        }
+        
+        // Update stage info display in both sidebars
+        function updateStageInfo(stageNum) {
+            const stageInfos = ['stageInfo', 'stageInfoDebug'];
+            
+            // Find stage data
+            const stage = stagesData.find(s => s.stage_num.toString() === stageNum.toString());
+            
+            stageInfos.forEach(infoId => {
+                const stageInfo = document.getElementById(infoId);
+                if (!stageInfo) return;
+                
+                if (stage) {
+                    currentStageInfo = stage;
+                    stageInfo.innerHTML = `
+                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${stage.name}</div>
+                        <div style="font-size: 11px; color: #666;">${stage.description}</div>
+                    `;
+                } else {
+                    stageInfo.textContent = `Stage ${stageNum} - Loading info...`;
+                }
+            });
+        }
+        
+        // Fetch and display tools for selected stage
+        async function fetchStageTools(stageNum) {
+            try {
+                const response = await fetch(`${API_URL}/tools?stage=${stageNum}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(`🛠️ Tools for stage ${stageNum}:`, data.tools);
+                
+                displayTools(data.tools || []);
+                
+            } catch (error) {
+                console.error('Error fetching tools:', error);
+                const toolsLists = ['toolsList', 'toolsListDebug'];
+                toolsLists.forEach(listId => {
+                    const toolsList = document.getElementById(listId);
+                    if (toolsList) {
+                        toolsList.innerHTML = '<div style="color: #f44336; font-size: 11px;">Error loading tools</div>';
+                    }
+                });
+            }
+        }
+        
+        // Display tools in both tools lists
+        function displayTools(tools) {
+            const toolsLists = ['toolsList', 'toolsListDebug'];
+            
+            toolsLists.forEach(listId => {
+                const toolsList = document.getElementById(listId);
+                if (!toolsList) return;
+                
+                if (!tools || tools.length === 0) {
+                    toolsList.innerHTML = '<div style="color: #666; font-size: 11px; padding: 8px;">No tools available for this stage</div>';
+                    return;
+                }
+                
+                let toolsHtml = '<div class="tools-list-title">Available Tools:</div>';
+                
+                tools.forEach(tool => {
+                    toolsHtml += `
+                        <div class="tool-item">
+                            <div class="tool-item-name">${tool.name}</div>
+                            <div class="tool-item-desc">${tool.description || 'No description available'}</div>
+                        </div>
+                    `;
+                });
+                
+                toolsList.innerHTML = toolsHtml;
+            });
+        }
+        
+        // Show stage notification
+        function showStageNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'error' ? '#f44336' : '#4caf50'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 2000;
+                font-size: 13px;
+                font-weight: 600;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Initialize stage selector on page load
+        function initializeStageSelector() {
+            console.log('🎯 Initializing stage selector...');
+            fetchStages();
+        }
+        
+        // ===== CHECKPOINTING FUNCTIONS =====
+        
+        // Get current checkpointing status
+        async function getCheckpointingStatus() {
+            try {
+                const response = await fetch(`${API_URL}/checkpointing/status`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📋 Checkpointing status:', data);
+                
+                updateCheckpointingUI(data);
+                
+            } catch (error) {
+                console.error('Error fetching checkpointing status:', error);
+                document.getElementById('checkpointingStatus').textContent = 'Error loading checkpointing status';
+            }
+        }
+        
+        // Update checkpointing UI elements
+        function updateCheckpointingUI(status) {
+            const toggle = document.getElementById('checkpointingToggle');
+            const statusDiv = document.getElementById('checkpointingStatus');
+            const toggleSlider = toggle.nextElementSibling;
+            const sliderButton = toggleSlider.querySelector('span');
+            
+            // Update toggle state
+            toggle.checked = status.checkpointing_enabled;
+            
+            // Update toggle visual state
+            if (status.checkpointing_enabled) {
+                toggleSlider.style.backgroundColor = '#667eea';
+                sliderButton.style.transform = 'translateX(26px)';
+            } else {
+                toggleSlider.style.backgroundColor = '#ccc';
+                sliderButton.style.transform = 'translateX(0px)';
+            }
+            
+            // Update status text
+            let statusText = `Status: ${status.checkpointing_enabled ? 'Enabled' : 'Disabled'}`;
+            if (status.workflow_has_checkpointer) {
+                statusText += ' • Checkpointer Active';
+            }
+            if (status.workflow_supports_checkpointing) {
+                statusText += ' • Workflow Compatible';
+            }
+            
+            statusDiv.textContent = statusText;
+        }
+        
+        // Toggle checkpointing on/off
+        async function toggleCheckpointing() {
+            const toggle = document.getElementById('checkpointingToggle');
+            const enabled = toggle.checked;
+            
+            try {
+                console.log(`🔧 ${enabled ? 'Enabling' : 'Disabling'} checkpointing...`);
+                
+                const response = await fetch(`${API_URL}/checkpointing/${enabled}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Checkpointing toggled:', data);
+                
+                // Update UI with new status
+                updateCheckpointingUI({
+                    checkpointing_enabled: data.checkpointing_enabled,
+                    workflow_has_checkpointer: data.has_checkpointer,
+                    workflow_supports_checkpointing: data.workflow_reloaded
+                });
+                
+                // Show success notification
+                showStageNotification(data.message, 'success');
+                
+            } catch (error) {
+                console.error('Error toggling checkpointing:', error);
+                showStageNotification(`Error toggling checkpointing: ${error.message}`, 'error');
+                
+                // Revert toggle state on error
+                toggle.checked = !enabled;
+                updateCheckpointingUI({
+                    checkpointing_enabled: !enabled,
+                    workflow_has_checkpointer: false,
+                    workflow_supports_checkpointing: false
+                });
+            }
+        }
+        
+        // ===== DEBUG TAB FUNCTIONS =====
+        
+        let checkpointsData = [];
+        let selectedCheckpointIndex = null;
+        
+        // Switch between Chat and Debug tabs
+        function switchTab(tabName) {
+            const chatTab = document.getElementById('chatTab');
+            const debugTab = document.getElementById('debugTab');
+            const chatContainer = document.getElementById('chatContainer');
+            const debugContainer = document.getElementById('debugContainer');
+            
+            if (tabName === 'chat') {
+                chatTab.classList.add('active');
+                debugTab.classList.remove('active');
+                chatContainer.style.display = 'grid';
+                debugContainer.classList.remove('active');
+            } else {
+                chatTab.classList.remove('active');
+                debugTab.classList.add('active');
+                chatContainer.style.display = 'none';
+                debugContainer.classList.add('active');
+                
+                // Initialize checkpointing status when debug tab is opened
+                getCheckpointingStatus();
+            }
+        }
+        
+        // Load checkpoints from backend
+        async function loadCheckpoints() {
+            const threadId = document.getElementById('threadIdInput').value.trim();
+            if (!threadId) {
+                alert('Please enter a thread ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/checkpoint/history/${threadId}?limit=20`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    alert(`Error: ${data.detail || 'Failed to load checkpoints'}`);
+                    return;
+                }
+                
+                checkpointsData = data.checkpoints;
+                displayCheckpointTimeline(data);
+                
+            } catch (error) {
+                alert(`Error loading checkpoints: ${error.message}`);
+            }
+        }
+        
+        // Display checkpoint timeline
+        function displayCheckpointTimeline(data) {
+            const timeline = document.getElementById('checkpointTimeline');
+            
+            if (data.checkpoint_count === 0) {
+                timeline.innerHTML = '<div class="empty-state"><div>No checkpoints found for this thread</div></div>';
+                return;
+            }
+            
+            let html = `<div class="checkpoint-timeline"><h3>Checkpoint Timeline (${data.checkpoint_count} points)</h3>`;
+            
+            data.checkpoints.forEach((cp, idx) => {
+                const time = new Date(cp.created_at).toLocaleTimeString();
+                html += `
+                    <div class="checkpoint-item" onclick="selectCheckpoint(${idx})" id="cp-${idx}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Step ${cp.step}</strong> - ${time}
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                ${cp.evidence_count} evidence | ${cp.message_count} msgs
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; margin-top: 4px; color: #666;">
+                            Next: ${cp.next_nodes.join(', ') || 'END'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            timeline.innerHTML = html;
+        }
+        
+        // Select a checkpoint to view details
+        function selectCheckpoint(index) {
+            selectedCheckpointIndex = index;
+            
+            // Update UI selection
+            document.querySelectorAll('.checkpoint-item').forEach((el, i) => {
+                if (i === index) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+            
+            displayCheckpointDetails(checkpointsData[index]);
+            
+            // Show diff if previous checkpoint exists
+            if (index < checkpointsData.length - 1) {
+                showCheckpointDiff(checkpointsData[index], checkpointsData[index + 1]);
+            }
+        }
+        
+        // Display checkpoint details
+        function displayCheckpointDetails(checkpoint) {
+            const details = document.getElementById('checkpointDetails');
+            
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <h3>Checkpoint Details</h3>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px;">
+                        <div><strong>Checkpoint ID:</strong> ${checkpoint.checkpoint_id}</div>
+                        <div><strong>Step:</strong> ${checkpoint.step}</div>
+                        <div><strong>Next Nodes:</strong> ${checkpoint.next_nodes.join(', ') || 'END'}</div>
+                        <div><strong>Evidence Count:</strong> ${checkpoint.evidence_count}</div>
+                        <div><strong>Message Count:</strong> ${checkpoint.message_count}</div>
+                        <div><strong>Created:</strong> ${new Date(checkpoint.created_at).toLocaleString()}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button onclick="timeTravel('${checkpoint.checkpoint_id}')" 
+                            style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        ⏮️ Jump to This Checkpoint
+                    </button>
+                    <p style="font-size: 12px; color: #666; margin-top: 8px;">
+                        Loads this checkpoint's state. Note: Checkpoint history is preserved (not deleted).
+                    </p>
+                </div>
+                
+                <div id="checkpointDiff"></div>
+            `;
+            
+            details.innerHTML = html;
+        }
+        
+        // Show visual diff between checkpoints
+        function showCheckpointDiff(current, previous) {
+            const diffDiv = document.getElementById('checkpointDiff');
+            
+            let html = '<h4>Changes from Previous Checkpoint</h4><div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px;">';
+            
+            // Evidence diff
+            const evidenceDiff = current.evidence_count - previous.evidence_count;
+            if (evidenceDiff > 0) {
+                html += `<div style="color: #28a745;">✓ +${evidenceDiff} evidence gathered</div>`;
+            }
+            
+            // Message diff
+            const messageDiff = current.message_count - previous.message_count;
+            if (messageDiff > 0) {
+                html += `<div style="color: #667eea;">✓ +${messageDiff} messages</div>`;
+            }
+            
+            // Step progression
+            html += `<div>Step: ${previous.step} → ${current.step}</div>`;
+            
+            // Next nodes
+            if (JSON.stringify(current.next_nodes) !== JSON.stringify(previous.next_nodes)) {
+                html += `<div>Next: ${previous.next_nodes.join(', ') || 'none'} → ${current.next_nodes.join(', ') || 'END'}</div>`;
+            }
+            
+            html += '</div>';
+            diffDiv.innerHTML = html;
+        }
+        
+        // Time travel: jump to checkpoint state
+        async function timeTravel(checkpointId) {
+            const threadId = document.getElementById('threadIdInput').value.trim();
+            
+            if (!confirm('This will load the selected checkpoint state. Note: Checkpoint history is preserved for inspection. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/checkpoint/reset/${threadId}/${checkpointId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    alert(`Error: ${data.detail || 'Failed to jump to checkpoint'}`);
+                    return;
+                }
+                
+                alert(`Successfully jumped to checkpoint at step ${data.step}. Agent will continue from this state on next query.`);
+                
+                // Reload checkpoints to show current state
+                loadCheckpoints();
+                
+            } catch (error) {
+                alert(`Error jumping to checkpoint: ${error.message}`);
             }
         }
     </script>
