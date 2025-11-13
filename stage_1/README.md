@@ -1,477 +1,239 @@
-# Stage 1: Foundation - Simple ReAct Agent
+# Stage 1: Simple ReAct Agent
 
-## Overview
+## What We're Building
 
-Stage 1 introduces the foundational **ReAct (Reasoning and Acting)** pattern for building AI agents. We'll build basic customer support agent for an online clothing retailer that can:
+Stage 1 introduces the basic building blocks of an AI agent for customer support. This is a simple agent that can look up order information and answer common questions about policies like returns and shipping.
 
-- Look up order status and details
+The agent uses the **ReAct pattern** (Reasoning and Acting), which means it thinks about what to do, takes an action (like using a tool), and then observes the results before responding to the customer.
+
+## What This Stage Achieves
+
+By the end of Stage 1, you'll have a working agent that can:
+- Look up order status by order number
 - Answer frequently asked questions using semantic search
-- Follow a simple linear flow with explicit reasoning steps
-- Handle errors gracefully with appropriate fallbacks
+- Follow a simple reasoning process before acting
+- Handle errors when things go wrong
+- Stay focused on customer support tasks (won't answer off-topic questions)
 
-**Learning Goals:**
-- Understanding the ReAct pattern (Thought → Action → Observation)
-- Building tools and integrating them with LangChain
-- Creating LangGraph workflows with proper state management
-- Implementing RAG (Retrieval Augmented Generation) with ChromaDB
-- Using built-in LangGraph utilities like `tools_condition` and `ToolNode`
+This stage establishes the foundation that later stages will build upon.
 
-## Architecture
+## Folder Structure
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    LangGraph Workflow                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  START → Agent → [tools_condition] → Tools → Agent          │
-│            ↓                            ↑                   │
-│           END ←─────────────────────────┘                   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-
-Components:
-- Agent Node: LLM with tools (reasoning + action selection)
-- Tools Node: Executes selected tools (observation)
-- tools_condition: Built-in routing logic
+stage_1/
+├── agents/                  # Core agent logic
+│   ├── state.py            # Defines what data flows through the agent
+│   ├── react_agent.py      # The agent that thinks and acts
+│   └── workflow.py         # Orchestrates the agent's flow
+├── prompts/                 # Instructions for the agent
+│   └── prompts.py          # System prompt with guardrails
+├── demo.py                  # Run this to see the agent in action
+└── README.md               # This file
 ```
 
-### ReAct Pattern Flow
+The agent also uses shared components in the `common/` directory:
+- `common/tools/` - The actual tools the agent can use (order lookup, FAQ search)
+- `common/data/` - Sample data (orders, FAQs)
+- `common/config.py` - Configuration settings
+- `common/model_factory.py` - Handles different AI model providers
 
-1. **Thought**: Agent receives user query and reasons about what information is needed
-2. **Action**: Agent decides to either use a tool or respond directly
-3. **Observation**: If tools were used, agent processes results and formulates response
+## Component Breakdown
 
-### Tools
+### 1. State (state.py)
 
-**1. Order Lookup Tool (`get_order_status`)**
-- Queries mock order database
-- Returns complete order details including items, status, tracking
-- Data source: `common/data/orders.py`
+This defines the data structure that flows through the agent as it works. Think of it as the agent's working memory.
 
-**2. FAQ Retrieval Tool (`search_faq`)**
-- Semantic search using ChromaDB + SentenceTransformers
-- Implements RAG pattern with text chunking
-- Persistent vector storage in `common/data/chroma_db/`
-- Data source: `common/data/faqs.py`
+**What it contains:**
+- `messages`: The conversation history between user and agent
+- `iterations`: A counter to prevent the agent from getting stuck in loops
 
-## Project Structure
+The state is very simple in Stage 1. Later stages add more complexity.
 
+### 2. ReAct Agent (react_agent.py)
+
+This is the brain of the operation. The agent follows a three-step pattern:
+
+**Thought**: The agent reasons about what it needs to do
+- "The user is asking about order status, so I need the order lookup tool"
+
+**Action**: The agent decides to use a tool or respond directly
+- Uses `get_order_status` tool or `search_faq` tool
+
+**Observation**: The agent processes the tool results
+- "The order was delivered on November 4th"
+
+**What it does:**
+- Initializes the AI model (OpenAI, Anthropic, or local Ollama)
+- Binds tools to the model so it knows what actions it can take
+- Has a `call_model` method that processes each step of the conversation
+- Handles errors gracefully if something goes wrong
+
+### 3. Workflow (workflow.py)
+
+This orchestrates how the agent moves through its reasoning process using LangGraph.
+
+**The flow:**
 ```
-evolution-of-ai-agents-arch/
-├── common/                          # Shared across all stages
-│   ├── config.py                   # Configuration management
-│   ├── logging_config.py           # Structured logging
-│   ├── model_factory.py            # Model provider abstraction
-│   ├── tools/                      # Shared tools
-│   │   ├── order_lookup.py        # Order database and lookup tool
-│   │   └── faq_retrieval.py       # ChromaDB RAG implementation
-│   └── data/                       # Shared data
-│       ├── orders.py              # Sample order data
-│       ├── faqs.py                # FAQ knowledge base
-│       └── chroma_db/             # ChromaDB storage (auto-generated)
-│
-├── frontend/                        # Shared web UI
-│   └── index.html                  # Chat interface with thought process
-│
-├── stage_1/                         # Stage 1 specific
-│   ├── agents/
-│   │   ├── state.py               # AgentState definition
-│   │   ├── react_agent.py         # ReAct agent implementation
-│   │   └── workflow.py            # LangGraph workflow orchestration
-│   ├── prompts/
-│   │   └── prompts.py             # System prompt with guardrails
-│   ├── backend/
-│   │   └── api.py                 # FastAPI backend with streaming
-│   ├── .env.example               # Environment variables template
-│   ├── demo.py                    # Demonstration script
-│   └── README.md                  # This file
-│
-└── requirements.txt                 # Python dependencies (project-wide)
+START → Agent (thinks) → Tools (acts) → Agent (observes) → END
 ```
 
-## Setup Instructions
+**What it does:**
+- Creates a graph with two nodes: the agent node and the tools node
+- The agent node calls the ReAct agent to think and decide
+- The tools node executes any tools the agent wants to use
+- Uses `tools_condition` to automatically decide: "Did the agent want to use tools or is it done?"
+- Loops back to the agent after tools run so it can observe results
+- Ends when the agent is satisfied and ready to respond
 
-### 1. Prerequisites
+Stage 1 is **stateless**, meaning each conversation starts fresh. Later stages add memory.
 
-- Python 3.9 or higher
-- OpenAI API key (or Ollama for local models)
-- pip or conda for package management
+### 4. System Prompt (prompts.py)
 
-### 2. Install Dependencies
+This is the instruction manual for the agent. It tells the agent:
 
-From the **project root** directory:
+**What to do:**
+- Act as a customer support agent for a clothing store
+- Always use the ReAct pattern (think, act, observe)
+- Use tools to get information instead of making things up
+- Be friendly and professional
+
+**What NOT to do:**
+- Don't answer questions outside of customer support (like weather or coding)
+- Don't mention technical terms like "tools" or "database"
+- Don't make up information
+- Don't give vague responses without the actual data
+
+**Guardrails:**
+The prompt includes strict rules to keep the agent focused on customer support. If someone asks about the weather, the agent politely declines and redirects.
+
+## How the Components Work Together
+
+Here's what happens when a customer asks "What's the status of order #12345?":
+
+1. **User Input** → Workflow receives the question
+2. **Agent Node** → ReAct agent reads the question and thinks:
+   - "This is about order status"
+   - "I need to use the get_order_status tool"
+3. **Tools Node** → Executes `get_order_status("12345")`
+   - Returns: Order delivered on Nov 4, 2025
+4. **Agent Node Again** → Agent observes the result and formulates response:
+   - "Your order #12345 was delivered on November 4th!"
+5. **End** → Response sent back to user
+
+The workflow uses LangGraph's built-in utilities (`tools_condition` and `ToolNode`) to handle the routing automatically. This keeps the code clean and simple.
+
+## Available Tools
+
+### Order Lookup Tool
+- **Name**: `get_order_status`
+- **What it does**: Searches a mock database for order information
+- **When to use**: Customer asks about their order status
+- **Data source**: `common/data/orders.py`
+
+### FAQ Retrieval Tool
+- **Name**: `search_faq`
+- **What it does**: Uses semantic search to find relevant answers in the FAQ database
+- **When to use**: Customer asks about policies, shipping, returns, payments
+- **Technology**: ChromaDB vector database with SentenceTransformers
+- **Data source**: `common/data/faqs.py`
+
+The FAQ tool is more sophisticated - it converts text into embeddings (numerical representations) and finds semantically similar content, even if the exact words don't match.
+
+## Running Stage 1
+
+### Quick Start
 
 ```bash
-# Create and activate virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies (shared across all stages)
-pip install -r requirements.txt
-```
-
-### 3. Configure Environment
-
-```bash
-# Create .env file from template
-cp stage_1/.env.example .env
-
-# Edit .env and add your API keys or set MODEL_TYPE
-# Options: MODEL_TYPE=openai|anthropic|ollama
-```
-
-### 4. Initialize FAQ Vector Store
-
-The FAQ vector store will be automatically created on first run. To manually initialize:
-
-```python
-from common.tools.faq_retrieval import get_faq_retriever
-
-# This will create the ChromaDB collection and generate embeddings
-retriever = get_faq_retriever()
-print(f"Initialized with {retriever.collection.count()} FAQ chunks")
-```
-
-**Note:** ChromaDB data is stored in `common/data/chroma_db/` (shared across all stages)
-
-## Usage
-
-### Option 1: Demo Script (Recommended for First Run)
-
-Run the interactive demo that shows 6 different scenarios:
-
-```bash
+# From project root
 python stage_1/demo.py
 ```
 
-This will demonstrate:
-- Order status lookups
-- FAQ queries (returns, shipping)
-- Guardrail enforcement (out-of-scope queries)
-- Multi-tool coordination
+This runs several example scenarios showing the agent in action.
 
-### Option 2: Web Interface
-
-**Step 1: Start the FastAPI backend**
+### Using the Web Interface
 
 ```bash
-uvicorn common.backend.api:app --reload
+# Terminal 1: Start backend
+uvicorn backend.api:app --reload
+
+# Terminal 2: Open frontend/index.html in your browser
 ```
 
-The backend will start on `http://localhost:8000`
+The web interface shows you the agent's thought process in real-time.
 
-**Step 2: Open the frontend**
+### Configuration
 
-Open `frontend/index.html` in your web browser (from the project root).
+Edit `.env` to change settings:
+- `MODEL_TYPE`: Choose between openai, anthropic, or ollama
+- `DEFAULT_MODEL`: Specific model name
+- `MAX_ITERATIONS`: Prevent infinite loops (default 10)
 
-**Features:**
-- 💬 Real-time chat interface
-- 🧠 Thought process panel (click to collapse to the right)
-- 🔄 Streaming responses
-- 📊 Visibility into tool calls and observations
+## Key Concepts
 
-### Option 3: Programmatic Usage
+### ReAct Pattern
+The agent explicitly reasons before acting. You can see this in the logs:
+- "Agent reasoning - iteration 1"
+- "Agent action: using tools ['get_order_status']"
+- "Agent action: final response"
 
-```python
-from stage_1.agents.workflow import AgentWorkflow
+### State Management
+LangGraph manages state automatically. The state flows through nodes and gets updated at each step. The `add_messages` reducer ensures messages are properly accumulated.
 
-# Initialize workflow (uses config MODEL_TYPE)
-workflow = AgentWorkflow()
+### Built-in Utilities
+Stage 1 uses LangGraph's utilities to simplify code:
+- `tools_condition`: Automatically checks if the agent called tools
+- `ToolNode`: Automatically executes tools and formats results
 
-# Single query
-result = workflow.invoke("What's the status of order #12345?")
+This means we don't need custom routing logic.
 
-# Extract response
-messages = result["messages"]
-final_response = messages[-1].content
-print(final_response)
+### Semantic Search with RAG
+The FAQ tool uses Retrieval Augmented Generation (RAG):
+1. FAQs are split into chunks and converted to embeddings
+2. Stored in ChromaDB (a vector database)
+3. When the agent searches, it converts the query to an embedding
+4. Finds the most similar FAQ chunks
+5. Returns relevant information to the agent
 
-# Streaming
-for chunk in workflow.stream("How do I return an item?"):
-    for node_name, node_output in chunk.items():
-        print(f"Node: {node_name}")
-        print(f"Output: {node_output}")
-```
+This allows the agent to find answers even when the question is phrased differently than the FAQ.
+
+## What's Next
+
+Stage 1 is intentionally simple to establish the foundation. It works well for basic queries, but has limitations:
+- Only two tools
+- No memory between conversations
+- Can struggle with complex multi-step requests
+- No way to handle ambiguous tool selection
+
+**Stage 2** addresses these by adding more tools and demonstrating where a single agent starts to struggle. This sets up the need for more sophisticated patterns in later stages.
 
 ## Example Interactions
 
-### Example 1: Order Status Check
+**Order Status Check:**
+- User: "What's the status of my order #12345?"
+- Agent thinks: Need order information
+- Agent acts: Uses get_order_status tool
+- Agent observes: Order delivered Nov 4
+- Agent responds: "Your order #12345 was delivered on November 4th!"
 
-**User:** "What's the status of my order #12345?"
+**FAQ Query:**
+- User: "How do I return an item?"
+- Agent thinks: Need policy information
+- Agent acts: Uses search_faq tool
+- Agent observes: Gets return policy from FAQ
+- Agent responds: "You can return items within 30 days..."
 
-**Agent Process:**
-1. 💭 Thought: "User asking about order status, need to use get_order_status tool"
-2. 🔍 Action: Calls `get_order_status("12345")`
-3. 👁️ Observation: Receives order details (Delivered, items, tracking, etc.)
-4. 💬 Response: Formats and presents order information to user
+## Testing
 
-### Example 2: FAQ Query
+Available test order IDs: 12345, 12346, 12347, 12348, 12349
 
-**User:** "How do I return an item?"
-
-**Agent Process:**
-1. 💭 Thought: "User asking about return policy, need to search FAQ"
-2. 🔍 Action: Calls `search_faq("How do I return an item?")`
-3. 👁️ Observation: ChromaDB returns relevant FAQ chunks
-4. 💬 Response: Presents return policy information
-
-### Example 3: Guardrails in Action
-
-**User:** "What's the weather today?"
-
-**Agent Response:**
-"I'm a customer support agent for our clothing store and can only help with order-related questions, shipping, returns, payments, and account issues. For other questions, please use a general-purpose assistant."
-
-## Key Concepts Demonstrated
-
-### 1. ReAct Pattern
-
-The agent explicitly follows Reasoning → Acting → Observation:
-
-```python
-# From agents/react_agent.py
-def call_model(self, state: AgentState) -> dict:
-    """
-    Thought + Action: Agent reasons and decides on tools
-    """
-    response = self.model_with_tools.invoke(messages)
-    return {"messages": [response], "iterations": iterations + 1}
-
-# Tools Node handles Observation automatically
-# Then loops back to agent for next thought
-```
-
-### 2. LangGraph State Management
-
-```python
-# From agents/state.py
-class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], add_messages]
-    iterations: int
-```
-
-- `messages`: Conversation history with proper reducer (`add_messages`)
-- `iterations`: Counter to prevent infinite loops
-
-### 3. Built-in Utilities
-
-Stage 1 uses LangGraph's built-in utilities for cleaner code:
-
-- `tools_condition`: Automatic routing based on tool calls
-- `ToolNode`: Automatic tool execution and response formatting
-
-```python
-# From agents/workflow.py
-workflow.add_conditional_edges(
-    "agent",
-    tools_condition,  # No custom logic needed!
-    {"tools": "tools", END: END}
-)
-```
-
-### 4. RAG with ChromaDB
-
-```python
-# From common/tools/faq_retrieval.py
-class FAQRetriever:
-    def __init__(self):
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.client = chromadb.PersistentClient(path=persist_dir)
-        self.collection = self._get_or_create_collection()
-    
-    def search(self, query: str, top_k: int = 2):
-        query_embedding = self.model.encode([query])
-        results = self.collection.query(query_embeddings=query_embedding, n_results=top_k)
-        return formatted_results
-```
-
-**Benefits:**
-- Persistent storage (vector DB persists across runs)
-- Fast semantic search
-- Text chunking for optimal retrieval
-- Metadata tracking
-
-### 5. Guardrails
-
-The system prompt includes guardrails to keep the agent focused:
-
-```python
-# From prompts/prompts.py
-SYSTEM_PROMPT = """
-IMPORTANT GUARDRAILS:
-- You must ONLY answer questions related to our clothing retail business
-- If asked about topics outside retail customer service, politely decline
-...
-"""
-```
-
-## Testing the Agent
-
-### Test Order IDs
-
-Available in the mock database:
-- `12345`: Delivered order (2 items)
-- `12346`: Shipped order (1 item)
-- `12347`: Processing order (2 items)
-- `12348`: Shipped order (shoes)
-- `12349`: Delivered order (sweater)
-
-### Test Queries
-
-**Order-related:**
+Try these queries:
 - "What's the status of order #12345?"
-- "Can you check order #12346?"
-- "Track my order #12347"
-
-**FAQ-related:**
 - "How do I return an item?"
 - "Do you offer free shipping?"
-- "What payment methods do you accept?"
-- "How long does shipping take?"
-
-**Guardrails testing:**
-- "What's the weather today?" (should decline)
-- "Write me some Python code" (should decline)
-- "Tell me a joke" (should decline)
-
-**Multi-tool:**
-- "Check order #12345 and tell me your return policy"
-
-## API Endpoints
-
-When running the backend (`uvicorn common.backend.api:app --reload`):
-
-### GET /
-Health check endpoint
-```json
-{
-  "status": "online",
-  "service": "Customer Support Agent",
-  "stage": "1"
-}
-```
-
-### GET /health
-Detailed health status
-```json
-{
-  "status": "healthy",
-  "workflow_initialized": true,
-  "model_type": "ollama"
-}
-```
-
-### POST /chat
-Chat with the agent
-
-**Request:**
-```json
-{
-  "message": "What's the status of order #12345?",
-  "stream": true
-}
-```
-
-**Response (streaming):**
-Server-Sent Events with:
-- `type: "thought"` - Agent reasoning and tool selection
-- `type: "observation"` - Tool execution results
-- `type: "response"` - Final agent response
-- `type: "done"` - Stream complete
-
-### GET /tools
-List available tools
-```json
-{
-  "tools": [
-    {"name": "get_order_status", "description": "..."},
-    {"name": "search_faq", "description": "..."}
-  ]
-}
-```
-
-## Configuration Options
-
-Edit `.env` to customize:
-
-```bash
-# Model Selection
-MODEL_TYPE=ollama                # openai, anthropic, or ollama
-DEFAULT_MODEL=llama3.1
-DEFAULT_TEMPERATURE=0
-
-# Ollama Configuration
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.1
-
-# Agent Behavior
-MAX_ITERATIONS=10                # Prevent infinite loops
-
-# Backend
-BACKEND_HOST=0.0.0.0
-BACKEND_PORT=8000
-```
-
-To use different model providers:
-
-```python
-# Uses config.MODEL_TYPE by default
-workflow = AgentWorkflow()
-
-# Or override explicitly
-workflow = AgentWorkflow(model_type="openai")
-workflow = AgentWorkflow(model_type="anthropic")
-workflow = AgentWorkflow(model_type="ollama")
-```
-
-**Model Factory Pattern:**
-The agent uses a factory pattern (in `common/model_factory.py`) to abstract model initialization. This makes it easy to:
-- Switch between providers without changing agent code
-- Add new providers in one place
-- Reuse model creation logic across all stages
-
-## Troubleshooting
-
-### ChromaDB Permission Issues
-
-If you encounter permission errors:
-```bash
-chmod -R 755 common/data/chroma_db/
-```
-
-### Port Already in Use
-
-Change the port in `.env`:
-```bash
-BACKEND_PORT=8001
-```
-
-### Import Errors
-
-Make sure you're running from the project root and have installed dependencies:
-```bash
-cd /path/to/evolution-of-ai-agents-arch
-pip install -r requirements.txt
-```
-
-### Model Configuration Issues
-
-Verify your `.env` file has the right MODEL_TYPE and corresponding API key:
-```bash
-cat .env | grep MODEL_TYPE
-```
-
-## What's Next?
-
-**Stage 2** will build upon this foundation by:
-- Adding more sophisticated tools (refunds, shipping modifications, inventory)
-- Demonstrating limitations of single-agent architectures
-- Showing tool selection confusion and context loss problems
-
+- "What's the weather?" (should decline)
+- "Check order #12345 and tell me your return policy" (multi-tool)
 
 ## Resources
-
-- [LangGraph Documentation](https://python.langchain.com/docs/langgraph)
-- [LangChain Tools](https://python.langchain.com/docs/modules/agents/tools/)
-- [ChromaDB Documentation](https://docs.trychroma.com/)
-- [ReAct Paper](https://arxiv.org/abs/2210.03629)
+1. **LangGraph Documentation:** https://langchain-ai.github.io/langgraph/
+2. **LangChain Academy:** Intro to LangGraph https://academy.langchain.com/courses/intro-to-langgraph (free course)
+3. **Building a ReAct Agent with Langgraph: A Step-by-Step Guide:** https://medium.com/@umang91999/building-a-react-agent-with-langgraph-a-step-by-step-guide-812d02bafefa

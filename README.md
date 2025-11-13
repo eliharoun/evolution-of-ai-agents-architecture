@@ -1,269 +1,172 @@
-<div align="center">
+# Evolution of AI Agent Architecture
 
-# 🤖 Evolution of AI Agents Architecture
+A hands-on learning repository that teaches you how to build AI agents from the ground up. You'll start with a simple agent and progressively build more sophisticated systems, understanding exactly why and when each pattern is useful.
 
-**A comprehensive hands-on tutorial series showcasing the evolution from simple to sophisticated AI agent design patterns**
+## What This Is
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-Framework-green?style=for-the-badge)](https://python.langchain.com/docs/langgraph)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+This isn't just another AI tutorial with code snippets. It's a complete learning path where you build real, working agents that solve actual problems. Each stage builds on the previous one, showing you not just how to implement patterns, but when and why to use them.
 
-</div>
+Think of it as a guided journey from "Hello World" to production-ready multi-agent systems.
 
-## 🎯 What You'll Learn
+## Who This Is For
 
-Transform from a simple chatbot to production-ready multi-agent systems through **5 progressive stages**:
+- **Beginners** who want to understand AI agents from first principles
+- **Software engineers** looking to add AI agent development to their skillset
+- **AI practitioners** who want to understand different architectural patterns
+- **Anyone** curious about how AI agents actually work under the hood
 
-| Stage | Focus | Architecture | Features |
-|-------|-------|--------------|--------------|
-| **🏗️ Stage 1** | **ReAct Foundation** | Single Agent | 2 tools, streaming, RAG, AI assistant style UI |
-| **🔧 Stage 2** | **Sophisticated Single** | Enhanced Agent | 7 tools, struggle detection, stateful ops |
-| **🧠 Stage 3** | **Advanced Patterns** | Smart Agent | ReWOO, Reflection, Plan-and-Execute |
-| **👥 Stage 4** | **Multi-Agent** | Agent Teams | Supervisor, Pipeline, Collaborative |
-| **📊 Stage 5** | **Production Analysis** | Optimized System | Performance comparison, pattern selection |
+No prior AI experience needed. If you know Python basics, you can follow along.
 
-## ✨ Features
+## The Learning Path
 
-### 🎬 **Simple Demo UI**
-- **Chatting interface** - Chat with the agent to test different scenarios
-- **Live thought process visualization** - Watch your agent think, act, and observe in real-time
+### Stage 1: Foundation - Simple ReAct Agent
+Build your first agent that can look up orders and answer customer questions. Learn the fundamental ReAct pattern (Reasoning and Acting) that underlies all agent systems.
 
-### 🛠️ **Production-Ready Architecture**
-- **Model Factory Pattern** - Switch between AI providers with zero code changes
-- **Shared Resources** - Reusable components across stages
-- **Configuration-Driven** - Environment-based model selection and behavior
-- **Standard Logging** - Logging throughout the code
+**What you'll learn:** Tool creation, state management, LangGraph basics, semantic search with vector databases
 
-### 🧰 **Advanced RAG Implementation**
-- **ChromaDB Integration** - Persistent vector storage for semantic search
-- **Text Chunking** - Optimal document preprocessing for retrieval
-- **Semantic Search** - Find relevant FAQs using sentence transformers
+[Read the README](stage_1/README.md) | [Follow the Tutorial](stage_1/BUILD_TUTORIAL.md)
 
-### 🔒 **Enterprise Features**
-- **Guardrails** - Scope-limited responses with polite redirects
-- **Error Handling** - Graceful fallbacks and recovery
-- **Type Safety** - Full type hints and validation
-- **API Documentation** - Auto-generated OpenAPI specs
+### Stage 2: When One Agent Has Too Many Choices
+Take the same agent architecture and give it more tools (7 instead of 2). Watch it struggle with complexity and understand why more capabilities don't automatically mean better performance.
 
-## 🚀 Quick Start
+**What you'll learn:** Single-agent limitations, struggle detection, when simple patterns break down
+
+[Read the README](stage_2/README.md) | [Follow the Tutorial](stage_2/BUILD_TUTORIAL.md)
+
+### Stage 3: ReWOO - Planning Before Acting
+Solve Stage 2's problems with a smarter approach. Instead of thinking and acting one step at a time, learn to plan all steps upfront and execute efficiently.
+
+**What you'll learn:** Upfront planning, variable substitution, dramatically reducing LLM calls
+
+[Read the README](stage_3/README.md) | [Follow the Tutorial](stage_3/BUILD_TUTORIAL.md)
+
+### Stage 4 Supervisor 1: Multi-Agent Teams (Quick Setup)
+Move from one agent to a team of specialists. Build a supervisor that coordinates three focused agents, each expert in their domain. Use LangGraph's built-in functions for quick implementation.
+
+**What you'll learn:** Specialization, parallel execution, rapid multi-agent setup
+
+[Read the README](stage_4/supervisor_1/README.md) | [Follow the Tutorial](stage_4/supervisor_1/BUILD_TUTORIAL.md)
+
+### Stage 4 Supervisor 2: Understanding Coordination (Custom Implementation)
+Build the same multi-agent system from scratch to see exactly how the supervisor pattern works. Understand what the built-in functions hide.
+
+**What you'll learn:** Agent composition, custom coordination logic, when to build vs buy
+
+[Read the README](stage_4/supervisor_2/README.md) | [Follow the Tutorial](stage_4/supervisor_2/BUILD_TUTORIAL.md)
+
+## Getting Started
+
+### Prerequisites
+- Python 3.9 or higher
+- Basic Python knowledge (functions, classes, dictionaries)
+- Either an OpenAI API key OR Ollama installed locally
+
+### Installation
 
 ```bash
-# 1. Clone and setup
+# Clone the repository
 git clone <your-repo-url>
 cd evolution-of-ai-agents-arch
+
+# Install dependencies
 pip install -r requirements.txt
 
-# 2. Configure (choose one)
-cp stage_1/.env.example .env
-# Option A: Use local models (free)
-echo "MODEL_TYPE=ollama" >> .env
+# Set up configuration
+cp .env.example .env
+# Edit .env with your settings
+```
 
-# Option B: Use OpenAI
-echo "MODEL_TYPE=openai" >> .env
-echo "OPENAI_API_KEY=your-key-here" >> .env
+### Choose Your Path
 
-# 3. Run instantly
+**Quick Demo (Recommended First):**
+```bash
 python stage_1/demo.py
 ```
+Runs the Stage 1 agent with example scenarios in your terminal.
 
-**🎉 That's it! Your AI agent is running with streaming responses!**
-
-## 🎭 Example Interactions
-
-<details>
-<summary><b>📦 Order Status Check</b></summary>
-
-```
-👤 Customer: "What's the status of my order #12345?"
-
-🤖 Agent: 
-💭 Thought: User asking about order status, need to use get_order_status tool
-🔧 Action: Using tool: get_order_status
-🔍 Observation: Order #12345 Details: Status: Delivered, Items: 2...
-💬 Response: Your order #12345 has been delivered! Here are the details...
-```
-</details>
-
-<details>
-<summary><b>❓ FAQ Query with RAG</b></summary>
-
-```
-👤 Customer: "How do I return an item?"
-
-🤖 Agent:
-💭 Thought: User asking about return policy, need to search FAQ
-🔧 Action: Using tool: search_faq  
-🔍 Observation: ChromaDB found relevant FAQs about returns...
-💬 Response: Here are the most relevant FAQs:
-   1. **Returns**: How do I return an item?
-   To return an item: 1) Log into your account...
-```
-</details>
-
-<details>
-<summary><b>🛡️ Guardrails in Action</b></summary>
-
-```
-👤 Customer: "What's the weather today?"
-
-🤖 Agent: I'm a customer support agent for our clothing store and can only help 
-with order-related questions, shipping, returns, payments, and account issues. 
-For other questions, please use a general-purpose assistant.
-```
-</details>
-
-## 🎯 Tutorial Stages
-
-### 🏗️ **Stage 1: Foundation**
-> **Simple ReAct Agent** - Learn the fundamentals
-
-**What you'll build:**
-- Customer support agent with ReAct pattern
-- Order lookup tool + FAQ retrieval with semantic search  
-- Streaming web interface with thought process visualization
-- Model factory supporting OpenAI, Anthropic, and Ollama
-
-**Concepts:**
-- `Thought → Action → Observation` loop
-- LangGraph workflows with built-in utilities
-- RAG implementation with ChromaDB
-- Production-ready FastAPI backend
-
-[📖 Stage 1 Documentation](stage_1/README.md)
-
----
-
-### 🔧 **Stage 2: Sophisticated Single Agent**
-> **Tool Complexity & Limitations** - Discover when single agents break
-
-
-
-**Demonstrated struggles:**
-- Missing information causing agent confusion
-- Multi-step dependency chains (4-5 sequential tools)
-- Complex conditional logic (if/then/else)
-- Tool confusion and redundant calls
-
-[📖 Stage 2 Documentation](stage_2/README.md)
-
----
-
-### 🧠 **Stage 3: Advanced Single Agent Patterns** *Coming Soon*
-> **Smart Architecture Patterns** - Solve complexity with intelligence
-
-**What you'll build:**
-- **ReWOO** - Plan all tools upfront, then execute
-- **Reflection** - Self-evaluation and learning from mistakes  
-- **Plan-and-Execute** - Dynamic planning with adaptation
-
-**Concepts:**
-- Advanced reasoning patterns
-- Self-improvement mechanisms
-- Adaptive planning strategies
-
----
-
-### 👥 **Stage 4: Multi-Agent Architecture** *Coming Soon*
-> **Agent Specialization** - Divide and conquer with agent teams
-
-**What you'll build:**
-- **Supervisor Pattern** - Central coordination with specialists
-- **Pipeline Pattern** - Sequential processing chain
-- **Collaborative Pattern** - Peer-to-peer agent negotiation
-
-**Concepts:**
-- Agent communication protocols
-- Task decomposition strategies
-- Coordination mechanisms
-
----
-
-### 📊 **Stage 5: Performance & Pattern Analysis** *Coming Soon*
-> **Production Optimization** - Choose the right pattern for the job
-
-## 🏃‍♂️ Running the Web Interface
-
-1. **Start the unified backend:**
-   ```bash
-   # Stage 1 (default - 2 tools)
-   uvicorn common.backend.api:app --reload
-   
-   # Or Stage 2 (7 tools + struggles)
-   STAGE=2 uvicorn common.backend.api:app --reload
-   ```
-
-2. **Open the frontend:**
-   ```bash
-   open frontend/index.html
-   ```
-
-3. **Try these queries:**
-   - `"What's the status of order #12345?"`
-   - `"How do I return an item?"`
-   - `"Do you offer free shipping?"`
-
-**✨ Watch the magic:**
-- Real-time responses
-- Click "🧠 Agent Thought Process" to see reasoning
-
-## 🔧 Configuration Options
-
-### 🏠 **Local Models (Free)**
+**Web Interface:**
 ```bash
-MODEL_TYPE=ollama
-OLLAMA_MODEL=llama3.1
+# Terminal 1: Start the backend
+uvicorn backend.api:app --reload
+
+# Terminal 2: Serve the frontend
+cd frontend && python3 -m http.server 8080
+
+# Open http://localhost:8080 in your browser
 ```
 
-### ☁️ **Cloud Models (Paid)**
+For detailed frontend setup, see [Frontend Quick Start Guide](frontend/QUICKSTART.md).
+
+## Repository Structure
+
+```
+evolution-of-ai-agents-arch/
+├── stage_1/              # Simple ReAct agent (2 tools)
+├── stage_2/              # Same agent with 7 tools (shows struggles)
+├── stage_3/              # ReWOO pattern (plans first)
+├── stage_4/
+│   ├── supervisor_1/     # Multi-agent with built-in coordination
+│   └── supervisor_2/     # Multi-agent with custom coordination
+├── common/               # Shared tools, data, and utilities
+├── frontend/             # Web interface for all stages
+└── backend/              # Unified FastAPI backend
+```
+
+Each stage has:
+- `README.md` - Explains what the stage does and why
+- `BUILD_TUTORIAL.md` - Step-by-step guide to building it yourself
+- `demo.py` - Quick demonstration script
+
+## What Makes This Different
+
+**Progressive Complexity:** Start simple, add complexity only when needed. Each stage solves real problems from the previous stage.
+
+**Build It Yourself:** Not just reading about patterns - you'll implement them. The tutorials guide you through every line of code.
+
+**Understand the Why:** Learn when to use each pattern, not just how. See the problems each pattern solves through concrete examples.
+
+**Production-Ready Code:** Not toy examples. The code includes proper error handling, logging, type hints, and follows best practices.
+
+**Compare Patterns:** Run the same query through different stages and see the differences. Understand trade-offs through experience.
+
+## Configuration
+
+The system supports multiple AI providers through a simple configuration:
+
 ```bash
-# OpenAI
-MODEL_TYPE=openai
-OPENAI_API_KEY=sk-your-key
-
-# Anthropic Claude  
-MODEL_TYPE=anthropic
-ANTHROPIC_API_KEY=sk-ant-your-key
+# .env file
+MODEL_TYPE=openai        # openai, anthropic, or ollama
+DEFAULT_MODEL=gpt-4o-mini
+STAGE=1                  # Which stage to run (1, 2, 3.1, 4.1, 4.2)
 ```
 
-**💡 Pro tip:** Start with Ollama for free experimentation!
+Switch between providers without changing any code.
 
-## 🎓 Learning Path
+## What You'll Build
 
-This repo teaches you to build **production-ready AI agents** through hands-on coding:
+By the end of this tutorial series, you'll understand:
 
-### **📚 What You'll Learn**
-- **LangGraph fundamentals** - State management, nodes, edges, conditional routing
-- **ReAct pattern mastery** - Thought → Action → Observation loops
-- **RAG implementation** - Vector databases, embeddings, semantic search
-- **Multi-agent coordination** - Communication, task delegation, collaboration
-- **Production deployment** - FastAPI, streaming, monitoring, optimization
+- How to build agents from scratch
+- When different patterns are appropriate
+- How to handle complex multi-step requests
+- How to coordinate multiple specialized agents
+- How to deploy agents to production
+- How to evaluate and monitor agent performance
 
-### **🏭 Production-Focused**
-- **Enterprise-grade code** - Type hints, logging, error handling, documentation
-- **Scalable architecture** - Shared resources, modular design, configuration-driven
-- **Multiple deployment options** - Local development → Cloud production (coming soon)
+More importantly, you'll understand the **why** behind architectural decisions, not just the how.
 
-### **🎨 Modern Stack**
-- **LangGraph** - Latest graph-based agent framework
-- **FastAPI** - High-performance async web framework
-- **ChromaDB** - Production vector database
-- **Multiple LLM Support** - OpenAI, Anthropic, Ollama
+## Contributing
 
-## 📄 License
+Found a bug? Have a suggestion? Contributions are welcome! This is a learning resource for the community.
 
-MIT License - Feel free to use this for learning, research, or commercial projects!
+## License
 
-## ⭐ Support This Project
+MIT License - Use this for learning, teaching, or building your own projects.
 
-If this tutorial helped you, please:
-- **⭐ Star this repository** on GitHub
-- **🔗 Share it** with your network
-- **👥 Follow me** for updates on new stages
+## Acknowledgments
+
+Built with LangGraph and LangChain. Inspired by research papers on ReAct, ReWOO, and multi-agent systems.
 
 ---
 
-<div align="center">
-
-[🚀 **Start with Stage 1**](stage_1/) | [📖 **Read the Docs**](stage_1/README.md) | [💻 **See the Code**](stage_1/agents/)
-
-</div>
+Ready to build your first AI agent? Start with [Stage 1](stage_1/README.md) or jump straight to the [tutorial](stage_1/BUILD_TUTORIAL.md).
