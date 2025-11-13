@@ -1,0 +1,154 @@
+/* Struggle Alert Banner */
+.struggle-alert {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 8px;
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.struggle-alert-icon {
+    font-size: 20px;
+}
+
+.struggle-alert-content {
+    flex: 1;
+}
+
+.struggle-alert-title {
+    font-weight: 600;
+    color: #856404;
+    margin-bottom: 4px;
+}
+
+.struggle-alert-message {
+    font-size: 13px;
+    color: #856404;
+}
+
+/* Struggle Badge */
+.struggle-badge {
+    background: #f44336;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: none;
+    margin-left: 8px;
+}
+
+.struggle-badge.visible {
+    display: inline-block;
+}
+
+/* Struggle Summary */
+.struggle-summary {
+    background: #ffebee;
+    border: 1px solid #ef5350;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.struggle-summary-title {
+    font-weight: 600;
+    color: #c62828;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.struggle-stat {
+    font-size: 13px;
+    color: #d32f2f;
+    padding: 6px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.struggle-stat-icon {
+    flex-shrink: 0;
+}
+
+.struggle-stat-detail {
+    flex: 1;
+}
+
+/* Stage 4 Multi-Agent Visualization */
+.supervisor-delegation {
+    background: #e8f4fd;
+    border: 1px solid #2196f3;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 8px 0;
+    animation: slideIn 0.3s ease-out;
+}
+
+.supervisor-delegation-title {
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.specialist-consultation {
+    background: #f3e5f5;
+    border-left: 4px solid #9c27b0;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 6px 0;
+    font-size: 13px;
+}
+
+.specialist-name {
+    font-weight: 600;
+    color: #7b1fa2;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.specialist-request {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 6px;
+    font-style: italic;
+}
+
+.specialist-response {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    color: #333;
+    font-size: 12px;
+}
+
+.parallel-indicator {
+    background: #e8f5e8;
+    color: #2e7d32;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.sequential-indicator {
+    background: #fff3e0;
+    color: #f57c00;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 8px;
+}

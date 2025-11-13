@@ -1,0 +1,237 @@
+/* Stage Selector Sidebar */
+.stage-selector {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.stage-selector-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.stage-selector-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.stage-dropdown {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    background: white;
+    margin-bottom: 15px;
+}
+
+.stage-dropdown:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.stage-info {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 15px;
+    border-left: 3px solid #667eea;
+}
+
+.tools-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.tools-list-title {
+    font-weight: 600;
+    font-size: 12px;
+    color: #667eea;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tool-item {
+    padding: 8px 12px;
+    margin: 6px 0;
+    background: #f8f9fa;
+    border-left: 3px solid #667eea;
+    border-radius: 6px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.tool-item:hover {
+    background: #e3f2fd;
+    transform: translateX(2px);
+}
+
+.tool-item-name {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Context Monitoring Widget */
+.context-monitor {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 200px;
+    z-index: 1000;
+    font-size: 13px;
+}
+
+.context-monitor-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.context-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.context-stat:last-child {
+    border-bottom: none;
+}
+
+.context-label {
+    color: #666;
+}
+
+.context-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.context-value.warning {
+    color: #ff9800;
+}
+
+.context-value.danger {
+    color: #f44336;
+}
+
+/* Response Card Grouping */
+.response-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.response-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.response-card-title {
+    font-weight: 600;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.response-card-toggle {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.response-card.collapsed .response-card-toggle {
+    transform: rotate(-90deg);
+}
+
+.response-card.collapsed .response-card-content {
+    display: none;
+}
+
+.response-card-content {
+    transition: all 0.3s ease;
+}
+
+/* Tab Navigation */
+.tab-button {
+    padding: 8px 20px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tab-button:hover:not(.active) {
+    background: #e0e0e0;
+}
+
+/* Debug Container */
+#debugContainer {
+    display: none;
+}
+
+#debugContainer.active {
+    display: grid;
+}
+
+.checkpoint-timeline {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.checkpoint-item {
+    padding: 12px;
+    margin: 8px 0;
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.checkpoint-item:hover {
+    background: #e3f2fd;
+    transform: translateX(4px);
+}
+
+.checkpoint-item.selected {
+    background: #e3f2fd;
+    border-left-color: #1976d2;
+}

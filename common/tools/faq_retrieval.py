@@ -58,8 +58,18 @@ class FAQRetriever:
         
         logger.info(f"FAQ retriever initializing - model: {model_name}, persist_dir: {self.persist_directory}, collection: {collection_name}, chunk_size: {chunk_size}")
         
-        # Initialize sentence transformer model
-        self.model = SentenceTransformer(model_name)
+        # Initialize sentence transformer model with explicit device and trust_remote_code
+        try:
+            self.model = SentenceTransformer(model_name, device='cpu', trust_remote_code=True)
+            # Ensure model is in eval mode
+            self.model.eval()
+            logger.info(f"Embedding model loaded successfully on CPU")
+        except Exception as e:
+            logger.error(f"Error loading embedding model: {str(e)}")
+            # Fallback: try without trust_remote_code
+            self.model = SentenceTransformer(model_name, device='cpu')
+            self.model.eval()
+            logger.info(f"Embedding model loaded with fallback configuration")
         
         # Initialize text splitter for chunking
         self.text_splitter = RecursiveCharacterTextSplitter(

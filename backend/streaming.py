@@ -31,6 +31,10 @@ async def stream_agent_response(message: str, stage: Union[int, float], thread_i
             initial_event = {"type": "thread_id", "thread_id": thread_id}
             yield f"data: {json.dumps(initial_event)}\n\n"
         
+        # Track Stage 4 flow per stream (not globally)
+        stage4_tools_executed = False
+        stage4_chunks_seen = []
+        
         # Call stream method based on workflow capabilities
         if hasattr(workflow, 'enable_checkpointing') and workflow.enable_checkpointing and thread_id:
             # Workflow supports checkpointing
@@ -43,6 +47,14 @@ async def stream_agent_response(message: str, stage: Union[int, float], thread_i
             # Parse the chunk from each node
             for node_name, node_output in chunk.items():
                 
+                # Track Stage 4 flow
+                if str(stage).startswith("4"):
+                    stage4_chunks_seen.append(node_name)
+                    if node_name == "tools":
+                        stage4_tools_executed = True
+                    
+                    logger.info(f"Stage {stage} stream chunk - node: {node_name}, output_keys: {list(node_output.keys()) if isinstance(node_output, dict) else 'not_dict'}, tools_executed: {stage4_tools_executed}")
+                
                 # Stage 3 nodes: plan, tool, solve
                 if node_name == "plan":
                     for event in _handle_plan_node(node_output, stage):
@@ -54,13 +66,35 @@ async def stream_agent_response(message: str, stage: Union[int, float], thread_i
                     async for event in _handle_solve_node(node_output, stage):
                         yield event
                 
-                # Stage 1/2 nodes: agent, tools
+                # Stage 4 built-in supervisor nodes (create_supervisor uses different names)
+                elif node_name == "supervisor":
+                    # Stage 4.1 built-in supervisor node
+                    async for event in _handle_supervisor_node(node_output, stage):
+                        yield event
+                elif node_name in ["order_operations", "product_inventory", "customer_account"]:
+                    # Stage 4.1 built-in specialist nodes
+                    for event in _handle_specialist_node(node_name, node_output, stage):
+                        yield event
+                
+                # Stage 4 custom supervisor nodes (create_react_agent uses agent/tools)
                 elif node_name == "agent":
-                    async for event in _handle_agent_node(node_output, stage, workflow):
-                        yield event
+                    if str(stage).startswith("4"):
+                        # Pass tools execution state to handler
+                        async for event in _handle_stage4_agent_node(node_output, stage, stage4_tools_executed):
+                            yield event
+                    else:
+                        # Regular Stage 1/2 agent handling
+                        async for event in _handle_agent_node(node_output, stage, workflow):
+                            yield event
                 elif node_name == "tools":
-                    for event in _handle_tools_node(node_output, stage):
-                        yield event
+                    if str(stage).startswith("4"):
+                        # Stage 4: Show specialist delegations in thought process
+                        for event in _handle_stage4_tools_node(node_output, stage):
+                            yield event
+                    else:
+                        # Regular Stage 1/2 tools handling
+                        for event in _handle_tools_node(node_output, stage):
+                            yield event
         
         # Send completion event
         for event in _send_completion_event(stage, workflow):
@@ -197,12 +231,237 @@ def _handle_tools_node(node_output: dict, stage: Union[int, float]) -> Generator
                 yield f"data: {json.dumps(event_data)}\n\n"
 
 
+
+async def _handle_supervisor_node(node_output: dict, stage: Union[int, float]) -> AsyncGenerator[str, None]:
+    """Handle Stage 4 built-in supervisor node output."""
+    global _stage4_builtin_final_response_started
+    
+    # Handle case where node_output might be None (coordination phase)
+    if not node_output or not isinstance(node_output, dict):
+        logger.info(f"Stage 4 supervisor node - coordination phase (empty output)")
+        return
+        
+    messages = node_output.get("messages", [])
+    
+    if not messages:
+        return
+    
+    msg = messages[-1]
+    
+    # Check if supervisor is delegating to specialists
+    if hasattr(msg, "tool_calls") and msg.tool_calls:
+        for tool_call in msg.tool_calls:
+            # Extract specialist consultation info
+            specialist_name = tool_call["name"]
+            args = tool_call.get("args", {})
+            
+            event_data = {
+                "type": "thought",
+                "node": "supervisor",
+                "content": f"Delegating to specialist: {tool_call['name']}",
+                "tool_call": {
+                    "name": specialist_name,
+                    "args": args
+                },
+                "stage": stage
+            }
+            yield f"data: {json.dumps(event_data)}\n\n"
+    
+    # Handle supervisor responses - stream substantial content
+    elif msg.content and len(msg.content.strip()) > 20:  # Only filter very short responses
+        logger.info(f"Streaming Stage 4 supervisor response: {msg.content[:100]}...")
+        
+        yield f"data: {json.dumps({'type': 'response_start'})}\n\n"
+        
+        # Stream word-by-word
+        words = msg.content.split(' ')
+        for i, word in enumerate(words):
+            word_with_space = word + (' ' if i < len(words) - 1 else '')
+            event_data = {
+                "type": "response_chunk",
+                "node": "supervisor",
+                "content": word_with_space,
+                "word_index": i,
+                "total_words": len(words)
+            }
+            yield f"data: {json.dumps(event_data)}\n\n"
+            await asyncio.sleep(0.05)
+        
+        yield f"data: {json.dumps({'type': 'response_complete', 'stage': stage})}\n\n"
+
+
+def _handle_specialist_node(specialist_name: str, node_output: dict, stage: Union[int, float]) -> Generator[str, None, None]:
+    """Handle Stage 4 specialist node output with detailed interaction info."""
+    # Handle case where node_output might be None
+    if not node_output or not isinstance(node_output, dict):
+        logger.info(f"Stage 4 specialist {specialist_name} - empty or invalid output: {type(node_output)}")
+        return
+        
+    messages = node_output.get("messages", [])
+    
+    if not messages:
+        return
+    
+    msg = messages[-1]
+    
+    # Format specialist name for display
+    display_name = specialist_name.replace('_', ' ').title()
+    specialist_emoji = {"order_operations": "📦", "product_inventory": "🛍️", "customer_account": "👤"}.get(specialist_name, "🤖")
+    
+    # Check if specialist is using tools
+    if hasattr(msg, "tool_calls") and msg.tool_calls:
+        for tool_call in msg.tool_calls:
+            # Extract meaningful info from tool arguments
+            tool_name = tool_call['name']
+            args = tool_call.get('args', {})
+            
+            # Format tool arguments for better understanding
+            args_summary = ""
+            if tool_name == "get_order_status" and "order_id" in args:
+                args_summary = f"for order #{args['order_id']}"
+            elif tool_name == "check_inventory" and "product" in args:
+                product = args.get('product', 'item')
+                color = args.get('color', '')
+                args_summary = f"for {product}" + (f" in {color}" if color else "")
+            elif tool_name == "search_faq" and "query" in args:
+                query = args['query'][:50] + "..." if len(args['query']) > 50 else args['query']
+                args_summary = f'for "{query}"'
+            
+            event_data = {
+                "type": "observation",
+                "node": "specialist",
+                "content": f"{specialist_emoji} {display_name}: Using {tool_name} {args_summary}",
+                "specialist": specialist_name,
+                "tool_call": {
+                    "name": tool_call["name"],
+                    "args": tool_call["args"]
+                },
+                "stage": stage
+            }
+            yield f"data: {json.dumps(event_data)}\n\n"
+    
+    # Check if specialist is providing response back to supervisor
+    elif msg.content:
+        # Show detailed response with key findings
+        content_preview = msg.content
+        
+        # Extract key information for summary
+        if "delivered" in content_preview.lower():
+            key_info = "Order delivered"
+        elif "in stock" in content_preview.lower() or "available" in content_preview.lower():
+            key_info = "Product availability checked"
+        elif "faq" in content_preview.lower() or "policy" in content_preview.lower():
+            key_info = "Policy information found"
+        else:
+            key_info = "Analysis completed"
+        
+        # Show both summary and preview
+        event_data = {
+            "type": "observation", 
+            "node": "specialist",
+            "content": f"{specialist_emoji} {display_name}: {key_info}",
+            "specialist": specialist_name,
+            "response_detail": content_preview[:200] + "..." if len(content_preview) > 200 else content_preview,
+            "stage": stage
+        }
+        yield f"data: {json.dumps(event_data)}\n\n"
+
+
+
+async def _handle_stage4_agent_node(node_output: dict, stage: Union[int, float], tools_executed: bool) -> AsyncGenerator[str, None]:
+    """Handle Stage 4 supervisor agent node output."""
+    # Handle case where node_output might be None
+    if not node_output or not isinstance(node_output, dict):
+        logger.info(f"Stage 4 custom agent node - empty or invalid output: {type(node_output)}")
+        return
+        
+    messages = node_output.get("messages", [])
+    
+    if not messages:
+        return
+    
+    msg = messages[-1]
+    
+    # Check if supervisor is delegating to specialists
+    if hasattr(msg, "tool_calls") and msg.tool_calls:
+        # This is delegation phase
+        for tool_call in msg.tool_calls:
+            event_data = {
+                "type": "thought",
+                "node": "agent",
+                "content": f"Delegating to specialist: {tool_call['name']}",
+                "tool_call": {
+                    "name": tool_call["name"],
+                    "args": tool_call.get("args", {})
+                },
+                "stage": stage
+            }
+            yield f"data: {json.dumps(event_data)}\n\n"
+    
+    # Handle final supervisor response (after specialists have executed) 
+    elif msg.content and tools_executed:
+        # For Stage 4, always stream the response after tools have executed
+        # (The supervisor may have tool_calls in message history but not be making new calls)
+        logger.info(f"Streaming Stage 4 supervisor response (after specialists completed): {msg.content[:100]}...")
+        
+        yield f"data: {json.dumps({'type': 'response_start'})}\n\n"
+        
+        # Stream word-by-word
+        words = msg.content.split(' ')
+        for i, word in enumerate(words):
+            word_with_space = word + (' ' if i < len(words) - 1 else '')
+            event_data = {
+                "type": "response_chunk",
+                "node": "agent",
+                "content": word_with_space,
+                "word_index": i,
+                "total_words": len(words)
+            }
+            yield f"data: {json.dumps(event_data)}\n\n"
+            await asyncio.sleep(0.05)
+        
+        yield f"data: {json.dumps({'type': 'response_complete', 'stage': stage})}\n\n"
+    else:
+        # Log skipped responses for debugging
+        logger.info(f"Stage 4 agent - skipping response (tools_executed: {tools_executed}, has_content: {bool(msg.content)}, has_tool_calls: {hasattr(msg, 'tool_calls')})")
+
+
+def _handle_stage4_tools_node(node_output: dict, stage: Union[int, float]) -> Generator[str, None, None]:
+    """Handle Stage 4 specialist tools node output."""
+    # Handle case where node_output might be None
+    if not node_output or not isinstance(node_output, dict):
+        logger.info(f"Stage 4 tools node - empty or invalid output: {type(node_output)}")
+        return
+        
+    messages = node_output.get("messages", [])
+    
+    if not messages:
+        return
+    
+    # For Stage 4, tools node contains specialist responses
+    # Show these as specialist completions, not detailed responses
+    for msg in messages:
+        if hasattr(msg, "content") and hasattr(msg, "name"):
+            tool_name = msg.name
+            specialist_name = tool_name.replace('specialist_', '').replace('transfer_to_', '')
+            display_name = specialist_name.replace('_', ' ').title()
+            
+            event_data = {
+                "type": "observation",
+                "node": "tools", 
+                "content": f"✅ {display_name} specialist completed analysis",
+                "specialist": specialist_name,
+                "stage": stage
+            }
+            yield f"data: {json.dumps(event_data)}\n\n"
+
+
 def _send_completion_event(stage: Union[int, float], workflow) -> Generator[str, None, None]:
     """Send completion event with optional struggle stats."""
     completion_data = {"type": "done", "stage": stage}
     
     # Add struggle stats for Stage 2
-    if stage == 2 and hasattr(workflow, 'get_struggle_stats'):
+    if str(stage) == "2" and hasattr(workflow, 'get_struggle_stats'):
         completion_data["struggle_stats"] = workflow.get_struggle_stats()
     
     yield f"data: {json.dumps(completion_data)}\n\n"

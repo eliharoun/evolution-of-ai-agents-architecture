@@ -58,10 +58,10 @@ async def health_check():
     health_info = {
         "status": "healthy",
         "stage": stage,
-        "available_stages": [1, 2, 3.1, 3.2, 3.3],
+        "available_stages": [1, 2, 3.1, 3.2, 3.3, 4.11, 4.12],
         "workflow_initialized": workflow is not None,
         "default_model": f"{config.DEFAULT_MODEL_TYPE}:{config.DEFAULT_MODEL_NAME}",
-        "tools_count": len(workflow.agent.tools) if workflow else 0
+        "tools_count": _get_tools_count(workflow, stage)
     }
     
     # Add struggle stats for Stage 2
@@ -72,46 +72,84 @@ async def health_check():
 
 
 @app.post("/stage/{stage_num}")
-async def switch_stage(stage_num: float):
+async def switch_stage(stage_num: str):
     """Switch to a different stage."""
     try:
         workflow = load_workflow(stage_num)
         return {
             "message": f"Switched to Stage {stage_num}",
             "stage": stage_num,
-            "tools_count": len(workflow.agent.tools),
+            "tools_count": _get_tools_count(workflow, stage_num),
             "default_model": f"{config.DEFAULT_MODEL_TYPE}:{config.DEFAULT_MODEL_NAME}"
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+def _get_tools_count(workflow, stage):
+    """Get tools count based on workflow type."""
+    if not workflow:
+        return 0
+    
+    # Convert stage to string for comparison
+    stage_str = str(stage) if stage is not None else ""
+    
+    # Stage 4 supervisors have different structures
+    if stage_str in ["4.11", "4.1.1"]:
+        # Supervisor 1: has specialists dict
+        return len(workflow.specialists) if hasattr(workflow, 'specialists') else 0
+    elif stage_str in ["4.12", "4.1.2"]:
+        # Supervisor 2: has specialist_tools list  
+        return len(workflow.specialist_tools) if hasattr(workflow, 'specialist_tools') else 0
+    else:
+        # Regular agents have tools directly
+        return len(workflow.agent.tools) if hasattr(workflow, 'agent') and hasattr(workflow.agent, 'tools') else 0
+
+
 @app.get("/tools")
-async def list_tools(stage_param: float = Query(None, description="Stage to get tools for")):
+async def list_tools(stage_param: str = Query(None, description="Stage to get tools for")):
     """List available tools for the specified stage."""
-    target_stage = stage_param or get_current_stage() or 1
+    target_stage = stage_param or get_current_stage() or "1"
     workflow = load_workflow(target_stage)
     
     tools_info = []
-    for tool in workflow.agent.tools:
-        if hasattr(tool, 'name'):
-            # Tool is an object with name and description attributes
-            tools_info.append({
-                "name": tool.name,
-                "description": getattr(tool, 'description', 'No description available')
-            })
-        elif isinstance(tool, str):
-            # Tool is just a string name
-            tools_info.append({
-                "name": tool,
-                "description": "No description available"
-            })
-        else:
-            # Try to get string representation
-            tools_info.append({
-                "name": str(tool),
-                "description": "No description available"
-            })
+    
+    # Handle different workflow structures
+    if target_stage in ["4.1", "4.11", "4.1.1"]:
+        # Supervisor 1: Show specialist agents
+        if hasattr(workflow, 'specialists'):
+            for name, agent in workflow.specialists.items():
+                tools_info.append({
+                    "name": f"specialist_{name}",
+                    "description": f"Specialist agent for {name.replace('_', ' ')}"
+                })
+    elif target_stage in ["4.12", "4.1.2"]:
+        # Supervisor 2: Show wrapped specialist tools
+        if hasattr(workflow, 'specialist_tools'):
+            for tool in workflow.specialist_tools:
+                tools_info.append({
+                    "name": tool.name,
+                    "description": getattr(tool, 'description', 'No description available')
+                })
+    else:
+        # Regular workflows with agent.tools
+        if hasattr(workflow, 'agent') and hasattr(workflow.agent, 'tools'):
+            for tool in workflow.agent.tools:
+                if hasattr(tool, 'name'):
+                    tools_info.append({
+                        "name": tool.name,
+                        "description": getattr(tool, 'description', 'No description available')
+                    })
+                elif isinstance(tool, str):
+                    tools_info.append({
+                        "name": tool,
+                        "description": "No description available"
+                    })
+                else:
+                    tools_info.append({
+                        "name": str(tool),
+                        "description": "No description available"
+                    })
     
     return {
         "tools": tools_info,
@@ -149,6 +187,16 @@ async def list_stages():
                 "name": "Plan-and-Execute - Hierarchical Planning",
                 "tools_count": 7,
                 "description": "Coming soon - Separates planning from execution"
+            },
+            "4.11": {
+                "name": "Supervisor 1 - Built-in create_supervisor()",
+                "tools_count": 3,
+                "description": "Production-ready supervisor using LangGraph's built-in function"
+            },
+            "4.12": {
+                "name": "Supervisor 2 - Custom Implementation",
+                "tools_count": 3,
+                "description": "Educational supervisor showing full coordination mechanics"
             }
         },
         "current_stage": get_current_stage()

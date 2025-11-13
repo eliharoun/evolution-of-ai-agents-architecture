@@ -1,0 +1,48 @@
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    .container.panel-collapsed {
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    .stage-selector {
+        max-height: 200px;
+    }
+    
+    .stage-selector-content {
+        padding: 15px;
+    }
+    
+    .tools-list {
+        max-height: 100px;
+    }
+    
+    .process-panel.collapsed {
+        min-height: 60px;
+    }
+}

@@ -1,5 +1,6 @@
 # Core LangGraph and LangChain
 langgraph
+langgraph-supervisor
 langchain
 langchain-core
 langchain-openai
